@@ -1,50 +1,19 @@
----
-name: feature-delivery
-description: End-to-end workflow to implement a feature from spec to shipping. Use when you have a written spec and want to go from zero to deployed.
-agents: [main_agent]
----
+# Skill — feature-delivery
 
-# Feature delivery skill
+Tu reçois une feature à implémenter. Ton job : la livrer proprement.
 
-Follow these steps in order. Do not skip steps.
+## Ce que tu fais
 
-## 1. Read the spec
+1. Lis la spec dans `docs/specs/features/<slug>.md`
+2. Explore le codebase si nécessaire (utilise l'agent `architecture-investigator`)
+3. Annonce le plan en 3-5 étapes — attends une validation si le plan est risqué
+4. Implémente
+5. Vérifie : tests, lint, comportement attendu
+6. Mets à jour `docs/architecture.md` si l'implémentation change quelque chose
+7. Commite : `feat(<slug>): description courte`
 
-- Load the relevant spec from `docs/specs/features/`.
-- If no spec exists, stop and ask the user to create one using the template.
+## Règles
 
-## 2. Explore
-
-- Identify all files that need to be created or modified.
-- List them explicitly before writing any code.
-
-## 3. Plan
-
-- Write a short plan (5–10 bullets max).
-- Get confirmation before proceeding.
-
-## 4. Implement
-
-- Make changes file by file.
-- After each file, briefly explain the change.
-
-## 5. Verify
-
-```bash
-bash scripts/lint.sh
-bash scripts/test.sh
-```
-
-Fix any errors before continuing.
-
-## 6. Document
-
-- Update the spec status to `shipped`.
-- Add a line to `docs/journal/session-notes.md`.
-- If an architecture decision was made, create an ADR.
-
-## 7. Ship
-
-```bash
-bash scripts/deploy.sh
-```
+- Une feature = un commit atomique
+- Si tu bloques, dis-le clairement avec ce qu'il manque
+- Ne modifie pas de fichiers hors scope de la feature
