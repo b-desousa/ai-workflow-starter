@@ -21,129 +21,112 @@ Maintenu par [b-desousa](https://github.com/b-desousa) — Architecture SI & IA.
 │   ├── skills/              ← Workflows réutilisables
 │   └── commands/            ← Raccourcis slash
 └── docs/
-    ├── project.md           ← Vision + scope (1 fichier)
+    ├── project.md           ← Vision + scope
     ├── architecture.md      ← Vue d'ensemble, intégrations, sécurité
     ├── decisions/           ← ADRs
     ├── specs/               ← Specs de features
+    ├── prompts/             ← Prompts réutilisables
     └── journal/             ← Mémoire inter-sessions
 ```
 
 ---
 
-## Chaîne de travail IA
-
-Ce workflow répartit chaque outil selon son rôle — aucun copier-coller de fichiers, aucune friction manuelle.
+## Chaîne de travail
 
 ```
-CONCEPTION              INITIALISATION          EXÉCUTION               RÉFLEXION
-────────────────        ────────────────        ────────────────        ────────────────
-Mammouth / Perplexity   Claude Code             Claude Code             Perplexity
-                                                                        + connecteur GitHub
-
-Explorer                Reçoit le brief         /feature-delivery       Lit le repo
-Arbitrer                Remplit les docs        /session-close          Génère un prompt
-Rédiger le brief        Crée ADRs + specs       /ship                   → Claude Code
-                        Commite tout
+CONCEPTION                INITIALISATION        EXÉCUTION              RÉFLEXION
+──────────────────────    ──────────────        ──────────────         ──────────────
+Mammouth / Perplexity     Claude Code           Claude Code            Perplexity
+                                                                       + GitHub connector
+Explorer, arbitrer        Reçoit le résumé      /feature-delivery      Lit le repo
+Prompt fin-de-            Remplit les docs      /session-close         Génère un prompt
+conception ↓              Crée ADRs + specs     /ship                  → Claude Code
+Résumé structuré          Commite tout
 ```
 
-### Règle d'or
+**Règle d'or** : ne lance Claude Code que sur quelque chose d'écrit dans le repo.
 
-> Ne lance Claude Code que sur quelque chose d'**écrit dans le repo**.  
-> Si tu ne peux pas pointer vers un fichier dans `docs/`, tu es encore en phase conception.
-
-### Ce que tu fais dans chaque outil
-
-| Outil | Usage |
+| Outil | Rôle |
 |---|---|
-| **Mammouth** | Explorer, arbitrer, rédiger le brief projet (→ `docs/project.md` + `docs/architecture.md`) |
-| **Perplexity** | Veille tech, vérification de décisions, génération de prompts Claude Code depuis le repo |
-| **Claude Code** | Tout ce qui touche le code et les fichiers du repo — initialisation, implémentation, commit |
-
-### Entrée dans Claude Code
-
-Mammouth produit un **brief structuré en deux blocs** (voir prompt ci-dessous).  
-Tu le donnes à Claude Code en une instruction :
-
-```
-Lis ce brief. Remplis docs/project.md et docs/architecture.md avec le contenu ci-dessous,
-crée les ADRs et specs correspondants, commite tout.
-
-[BLOC 1 — docs/project.md]
-...
-
-[BLOC 2 — docs/architecture.md]
-...
-```
-
-Claude écrit, commite. Toi tu valides ou tu corriges en langage naturel.
+| **Mammouth** | Concevoir, arbitrer, produire le résumé de fin de session |
+| **Perplexity** | Veille tech, vérification de décisions, générer des prompts Claude Code |
+| **Claude Code** | Tout ce qui touche les fichiers du repo — init, implémentation, commit |
 
 ---
 
-## Workflow projet
+## Démarrer un projet
 
-### 1. Concevoir (Mammouth / Perplexity)
+### Étape 1 — Concevoir (Mammouth / Perplexity)
 
-Utiliser le prompt de brief disponible dans [`docs/prompts/brief-projet.md`](docs/prompts/brief-projet.md).  
-Mammouth produit les deux blocs de contenu prêts à injecter.
-
-### 2. Initialiser (Claude Code)
+Une fois ta session de conceptualisation terminée, colle ce prompt :
 
 ```
-GitHub → Use this template → créer le repo projet
+Nous venons de terminer notre session de conceptualisation.
+
+Fais-moi un résumé complet et structuré de tout ce qu'on a décidé,
+dans le format suivant — sans omettre d'information utile, sans remplissage :
+
+## Nom du projet
+## Vision
+## Objectif court terme
+## Utilisateurs / client
+## Features v1
+## Hors scope v1
+## Stack technique
+## Infrastructure
+## Intégrations externes
+## Contraintes
+## Décisions clés
+## Points de vigilance
 ```
 
-Donner le brief à Claude Code → il remplit les docs, crée ADRs et specs, commite.
+### Étape 2 — Initialiser (Claude Code)
 
-### 3. Cadrer une feature
-
-Demander à Claude Code : *"Crée une spec pour [feature] depuis le template dans `docs/specs/features/`"*.
-
-### 4. Implémenter
+1. `GitHub → Use this template → créer le repo projet`
+2. Ouvrir Claude Code dans le repo
+3. Coller :
 
 ```
-/feature-delivery
+Voici le résumé de ma session de conceptualisation.
+Initialise le projet en lançant le skill project-bootstrap.
+
+[résumé ici]
 ```
 
-Claude lit la spec, explore, planifie (tu valides), implémente, vérifie, documente.
-
-### 5. Fermer la session
-
-```
-/session-close
-```
-
-Claude écrit dans `docs/journal/session-notes.md` : fait / reste / décisions / prochaine action.
-
-### 6. Reprendre un projet
-
-Ouvrir Claude Code → `CLAUDE.md` (règles) + `docs/journal/session-notes.md` (dernière session).  
-Pas besoin de réexpliquer le projet.
+Claude remplit `docs/project.md`, `docs/architecture.md`, crée les ADRs et specs, commite tout.
 
 ---
 
-### Commandes disponibles
+## Cycle de développement
+
+**Cadrer une feature** : demander à Claude Code *"Crée une spec pour [feature] dans `docs/specs/features/`"*
+
+**Implémenter** : `/feature-delivery` — Claude lit la spec, planifie (tu valides), implémente, commite.
+
+**Fermer la session** : `/session-close` — Claude écrit dans `docs/journal/session-notes.md` : fait / reste / décisions / prochaine action.
+
+**Reprendre** : `CLAUDE.md` + `docs/journal/session-notes.md` — le contexte est là, pas besoin de réexpliquer.
+
+---
+
+## Référence rapide
 
 | Commande | Usage |
 |---|---|
-| `/project-bootstrap` | Initialiser un nouveau projet |
-| `/feature-delivery` | Implémenter une feature de bout en bout |
-| `/session-close` | Écrire le journal de fin de session |
-| `/ship` | Lint + test + deploy en séquence |
-
-### Agents disponibles
+| `/project-bootstrap` | Initialiser depuis un brief |
+| `/feature-delivery` | Implémenter une feature |
+| `/session-close` | Journal de fin de session |
+| `/ship` | Lint + test + deploy |
 
 | Agent | Usage |
 |---|---|
-| `architecture-investigator` | Explorer le codebase sans polluer le contexte principal |
-| `reviewer` | Revue structurée d'un diff ou d'une PR |
+| `architecture-investigator` | Explorer le codebase en isolation |
+| `reviewer` | Revue structurée d'un diff ou PR |
 
 ---
 
-## Activer comme template
+## Setup
 
-Dans GitHub : **Settings → General → Template repository** ✓  
-Ensuite : **Use this template** pour chaque nouveau projet.
+**Activer le template** : Settings → General → Template repository ✓
 
-## Overrides personnels
-
-Créer `CLAUDE.local.md` à la racine (déjà dans `.gitignore`) pour des notes perso non committées : contexte local, préférences, focus en cours.
+**Overrides personnels** : créer `CLAUDE.local.md` à la racine (dans `.gitignore`) pour du contexte local non commité.
