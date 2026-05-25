@@ -8,7 +8,7 @@ Maintenu par [b-desousa](https://github.com/b-desousa) — Architecture SI & IA.
 
 - `CLAUDE.md` est un rulebook, pas une doc. Court, stable, lu à chaque session.
 - Les docs se chargent à la demande. Seul ce qui est utile à la tâche est chargé.
-- Le journal remplace la mémoire perdue entre conversations.
+- Le journal remplace la mémoire perdue entre sessions.
 - Ce repo ne contient pas de code. Il guide Claude Code.
 
 ## Structure
@@ -18,13 +18,13 @@ Maintenu par [b-desousa](https://github.com/b-desousa) — Architecture SI & IA.
 ├── .claude/
 │   ├── settings.json        ← Permissions allow/deny
 │   ├── agents/              ← Subagents pour investigations isolées
-│   ├── skills/              ← Workflows réutilisables
+│   ├── skills/              ← Workflows structurés
 │   └── commands/            ← Raccourcis slash
 └── docs/
     ├── project.md           ← Vision + scope
     ├── architecture.md      ← Vue d'ensemble, intégrations, sécurité
-    ├── decisions/           ← ADRs
-    ├── specs/               ← Specs de features
+    ├── decisions/           ← ADRs (auto-générés)
+    ├── specs/               ← Specs de features (auto-générées)
     ├── prompts/             ← Prompts réutilisables
     └── journal/             ← Mémoire inter-sessions
 ```
@@ -38,10 +38,10 @@ CONCEPTION                INITIALISATION        EXÉCUTION              RÉFLEXI
 ──────────────────────    ──────────────        ──────────────         ──────────────
 Mammouth / Perplexity     Claude Code           Claude Code            Perplexity
                                                                        + GitHub connector
-Explorer, arbitrer        Reçoit le résumé      /feature-delivery      Lit le repo
-Prompt fin-de-            Remplit les docs      /session-close         Génère un prompt
-conception ↓              Crée ADRs + specs     /ship                  → Claude Code
-Résumé structuré          Commite tout
+Explorer, arbitrer        Reçoit le résumé      Implémente             Lit le repo
+Prompt fin-de-            Remplit les docs      Documente auto         Génère un prompt
+conception ↓              Crée ADRs + specs     /session-close         → Claude Code
+Résumé structuré          Commite tout          /ship
 ```
 
 **Règle d'or** : ne lance Claude Code que sur quelque chose d'écrit dans le repo.
@@ -99,13 +99,11 @@ Claude remplit `docs/project.md`, `docs/architecture.md`, crée les ADRs et spec
 
 ## Cycle de développement
 
-**Cadrer une feature** : demander à Claude Code *"Crée une spec pour [feature] dans `docs/specs/features/`"*
-
-**Implémenter** : `/feature-delivery` — Claude lit la spec, planifie (tu valides), implémente, commite.
+**Implémenter** : décris ce que tu veux en langage naturel. Claude implémente, documente les specs et ADRs concernés, commite — automatiquement.
 
 **Fermer la session** : `/session-close` — Claude écrit dans `docs/journal/session-notes.md` : fait / reste / décisions / prochaine action.
 
-**Reprendre** : `CLAUDE.md` + `docs/journal/session-notes.md` — le contexte est là, pas besoin de réexpliquer.
+**Reprendre** : `CLAUDE.md` + `docs/journal/session-notes.md` — le contexte est là.
 
 ---
 
@@ -114,14 +112,13 @@ Claude remplit `docs/project.md`, `docs/architecture.md`, crée les ADRs et spec
 | Commande | Usage |
 |---|---|
 | `/project-bootstrap` | Initialiser depuis un brief |
-| `/feature-delivery` | Implémenter une feature |
 | `/session-close` | Journal de fin de session |
 | `/ship` | Lint + test + deploy |
 
 | Agent | Usage |
 |---|---|
 | `architecture-investigator` | Explorer le codebase en isolation |
-| `reviewer` | Revue structurée d'un diff ou PR |
+| `reviewer` | Revue structurée avant `/ship` |
 
 ---
 
