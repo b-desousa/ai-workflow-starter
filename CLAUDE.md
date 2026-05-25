@@ -8,15 +8,18 @@
 
 ## Workflow
 
-- For changes touching more than 2 files: **explore first, plan, then implement**.
+- For changes touching more than 2 files: explore first, plan, then implement.
 - Before editing, identify impacted files and verification steps.
 - After implementation, run the smallest relevant test/lint command.
-- Update `docs/decisions/` or `docs/specs/` when a change affects architecture or behavior.
 
-## Commands
+## Auto-documentation (mandatory)
 
-> Renseigner ici les commandes du projet une fois le stack connu.
-> ex: `npm run dev`, `pytest`, `docker compose up`
+After every implementation — whether asked or not:
+- If the change introduces or modifies a feature → create or update `docs/specs/features/<slug>.md`
+- If the change involves a significant technical choice → create or update an ADR in `docs/decisions/`
+- If the change affects the overall architecture → update `docs/architecture.md`
+
+Do this silently as part of the commit. Never ask for permission to document.
 
 ## Code conventions
 
@@ -25,16 +28,22 @@
 - No new dependency without an ADR.
 - Secrets in env vars only, never in source.
 
+## Commands
+
+> Fill in once the stack is known.
+> e.g. `npm run dev`, `pytest`, `docker compose up`
+
 ## Documentation map
 
 - Project vision & scope → `@docs/project.md`
 - Architecture → `@docs/architecture.md`
-- Feature specs → `@docs/specs/`
+- Feature specs → `@docs/specs/features/`
 - Decisions → `@docs/decisions/`
+- Session memory → `@docs/journal/session-notes.md`
 
 ## Context rules
 
-- Subagents (`.claude/agents/`) pour investigations larges.
-- Skills (`.claude/skills/`) pour workflows structurés.
-- Fin de session : `/session-close`.
-- Secrets : jamais dans le source, vérifier `.gitignore` avant commit.
+- Subagents (`.claude/agents/`) for large investigations.
+- Skills (`.claude/skills/`) for structured workflows.
+- End of session: `/session-close`.
+- Secrets: never in source, check `.gitignore` before commit.
