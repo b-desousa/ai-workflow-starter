@@ -6,32 +6,31 @@ Maintenu par [b-desousa](https://github.com/b-desousa) — Architecture SI & IA.
 
 ## Philosophie
 
-- **Contexte minimal** — `CLAUDE.md` est un rulebook, pas une doc.
-- **Chargement progressif** — on charge uniquement ce qui est utile à la tâche en cours.
-- **Mémoire inter-sessions** — le journal remplace le contexte perdu entre conversations.
-- **Pas d’infra ici** — scripts, Docker, CI/CD appartiennent au repo projet réel.
+- `CLAUDE.md` est un rulebook, pas une doc. Court, stable, lu à chaque session.
+- Les docs se chargent à la demande. Seul ce qui est utile à la tâche est chargé.
+- Le journal remplace la mémoire perdue entre conversations.
+- Ce repo ne contient pas de code. Il guide Claude Code.
 
 ## Structure
 
 ```
-├── CLAUDE.md                   ← Règles globales Claude Code (< 80 lignes)
-├── CLAUDE.local.md.example     ← Overrides personnels (non commis)
+├── CLAUDE.md                ← Règles globales (< 80 lignes)
 ├── .claude/
-│   ├── settings.json             ← Permissions allow/deny
-│   ├── agents/                   ← Subagents pour investigations isolées
-│   ├── skills/                   ← Workflows réutilisables
-│   └── commands/                 ← Raccourcis slash
+│   ├── settings.json          ← Permissions allow/deny
+│   ├── agents/                ← Subagents pour investigations isolées
+│   ├── skills/                ← Workflows réutilisables
+│   └── commands/              ← Raccourcis slash
 └── docs/
-    ├── project/                  ← Vision, scope, glossaire
-    ├── architecture/             ← Vue d’ensemble, intégrations, sécurité
-    ├── decisions/                ← ADRs
-    ├── specs/                    ← Specs de features
-    └── journal/                  ← Notes de sessions, learnings
+    ├── project.md             ← Vision + scope (1 fichier)
+    ├── architecture.md        ← Vue d’ensemble, intégrations, sécurité
+    ├── decisions/             ← ADRs
+    ├── specs/                 ← Specs de features
+    └── journal/               ← Mémoire inter-sessions
 ```
 
 ## Usage
 
-1. Utiliser ce repo comme template GitHub
-2. Remplir `docs/project/vision.md` et `scope.md`
-3. Lancer le skill `project-bootstrap` dans Claude Code
-4. Fermer chaque session avec `/session-close`
+1. Utiliser comme template GitHub (`Use this template`)
+2. Lancer le skill `project-bootstrap` dans Claude Code
+3. Fermer chaque session avec `/session-close`
+4. Pour les overrides perso non commis : créer `CLAUDE.local.md` (déjà dans `.gitignore`)
