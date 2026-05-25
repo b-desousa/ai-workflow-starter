@@ -11,18 +11,12 @@
 - For changes touching more than 2 files: **explore first, plan, then implement**.
 - Before editing, identify impacted files and the verification steps.
 - After implementation, run the smallest relevant test/lint command.
-- Update `docs/decisions/` or `docs/specs/` when a change affects architecture or observable behavior.
+- Update `docs/decisions/` or `docs/specs/` when a change affects architecture or behavior.
 
 ## Commands
 
-```bash
-bash scripts/bootstrap.sh  # Install dependencies
-bash scripts/test.sh        # Run test suite
-bash scripts/lint.sh        # Lint + typecheck
-bash scripts/deploy.sh      # Build + deploy via Coolify
-```
-
-> Adapt these commands to the actual stack in each project.
+> Add project-specific commands here once the stack is known.
+> e.g. `npm run dev`, `pytest`, `docker compose up`
 
 ## Code conventions
 
@@ -37,17 +31,15 @@ bash scripts/deploy.sh      # Build + deploy via Coolify
 - Architecture overview → `@docs/architecture/overview.md`
 - Active feature specs → `@docs/specs/features/`
 - Architecture decisions → `@docs/decisions/`
-- Operations & deploy → `@docs/operations/`
 
 ## Context management
 
-- Use **subagents** (`.claude/agents/`) for broad investigations to avoid polluting the main context.
-- Use **skills** (`.claude/skills/`) to trigger structured workflows.
+- Use **subagents** (`.claude/agents/`) for broad investigations.
+- Use **skills** (`.claude/skills/`) for structured workflows.
 - When compacting, preserve: modified files, pending decisions, remaining tasks.
-- End each session with a note in `docs/journal/session-notes.md`.
+- End each session with `/session-close`.
 
 ## Security
 
 - No credentials, tokens or API keys in source code.
 - Check `.gitignore` before committing new config files.
-- Tag any sensitive decision in an ADR with `[SECURITY]`.

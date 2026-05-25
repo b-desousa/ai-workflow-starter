@@ -1,27 +1,14 @@
-# Security
+# Sécurité
 
-## Principles
+## Principes
 
-- Secrets in env vars only, never in source.
-- Least privilege on all external integrations.
-- No public endpoints without auth.
+- Secrets en variables d’environnement uniquement.
+- Moindre privilège sur toutes les intégrations externes.
+- Aucun endpoint public sans auth.
 
-## Secrets management
+## Checklist avant deploy
 
-- Local: `.env` (gitignored)
-- Production: Coolify environment variables
-
-## Access control
-
-| Resource | Who has access |
-|---|---|
-| VPS | Owner only |
-| Coolify | Owner only |
-| n8n | Owner only |
-
-## Security checklist before deploy
-
-- [ ] No secrets in source (grep check in `deploy-coolify` skill)
-- [ ] `.env.example` up to date
-- [ ] Exposed ports reviewed
-- [ ] Dependencies up to date
+- [ ] Aucun secret en clair dans le source
+- [ ] `.env.example` à jour
+- [ ] Ports exposés passés en revue
+- [ ] Dépendances à jour

@@ -1,27 +1,25 @@
 # Architecture overview
 
-> Fill using the `architecture-review` skill or manually.
+> Charger à la demande. Ne pas importer dans CLAUDE.md.
 
 ## System context
 
-<!-- Who uses this system, what external systems does it integrate with? -->
+<!-- Qui utilise ce système ? Quels systèmes externes ? -->
 
-## Containers
+## Composants principaux
 
-<!-- List main components: web app, API, DB, workers, queues -->
-
-| Component | Role | Tech |
+| Composant | Rôle | Tech |
 |---|---|---|
 | | | |
 
-## Key flows
+## Flux principaux
 
-<!-- Describe 1-3 main data/event flows -->
+<!-- Décrire 1–3 flux de données ou d’événements -->
 
-## Architecture decisions
+## Décisions clés
 
-<!-- Summary of key choices — details in docs/decisions/ -->
+<!-- Résumé — détails dans docs/decisions/ -->
 
-## Known risks
+## Risques connus
 
-<!-- Current technical risks or debt -->
+<!-- Dette technique, points de fragilité -->

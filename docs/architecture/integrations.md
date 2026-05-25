@@ -1,14 +1,11 @@
-# Integrations
+# Intégrations
 
-| System | Type | Auth | Notes |
+| Système | Type | Auth | Notes |
 |---|---|---|---|
-| n8n | Webhook / API | API key | Automation layer |
-| Anthropic API | REST | API key | Claude Code + LLM calls |
-| Slack | Webhook | Bot token | |
-| Notion | REST API | Integration token | |
+| | | | |
 
-## MCP servers in use
+## MCP servers
 
-| MCP server | Purpose |
+| MCP server | Usage |
 |---|---|
 | | |
