@@ -1,129 +1,159 @@
 # ai-workflow-starter
 
-Starter de contexte pour projets AI-native — conçu pour Claude Code.
+A Claude Code context template for solo developers. Gives Claude a structured project memory, an automated feature workflow, and disciplined agent behavior — with minimal token overhead.
 
-Maintenu par [b-desousa](https://github.com/b-desousa) — Architecture SI & IA.
+Maintained by [b-desousa](https://github.com/b-desousa) · Architecture SI & IA.
 
-## Philosophie
+---
 
-- `CLAUDE.md` est un rulebook, pas une doc. Court, stable, lu à chaque session.
-- Les docs se chargent à la demande. Seul ce qui est utile à la tâche est chargé.
-- Le journal remplace la mémoire perdue entre sessions.
-- Ce repo ne contient pas de code. Il guide Claude Code.
+## How to use this workflow
 
-## Structure
+### 1. Create your project from this template
+
+```bash
+# GitHub → Use this template → create repo
+git clone <your-new-repo>
+cd <your-new-repo>
+```
+
+Fill in the two required files before opening Claude Code:
+
+- `docs/project.md` — project vision, scope, target users, v1 features, out-of-scope
+- `docs/architecture.md` — stack, infrastructure, key integrations, constraints
+
+### 2. Brainstorm outside Claude Code
+
+Do your conceptualization and planning in any external tool (Perplexity, ChatGPT, notes, etc.).
+Do **not** use Claude Code for brainstorming — it consumes tokens without producing code.
+
+### 3. Open Claude Code and launch a feature
 
 ```
-├── CLAUDE.md                ← Règles globales (< 80 lignes)
+/feature <your feature description or structured brief>
+```
+
+Claude will:
+1. Read `CLAUDE.md`, `docs/project.md`, `docs/architecture.md`, `docs/journal/session-notes.md`
+2. Write a full implementation plan → `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`
+3. Present a task summary and wait for your approval ← **your only checkpoint**
+4. Execute automatically: subagent per task → spec review → code quality review → commit
+5. Update `docs/`, create ADRs if needed, update `session-notes.md`
+
+### 4. Close the session
+
+```
+/session-close
+```
+
+Claude writes the session summary to `docs/journal/session-notes.md` (done, open, decisions, next action).
+Next session, Claude reads it and resumes with full context.
+
+### 5. Add a CLAUDE.local.md for personal overrides (optional)
+
+Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only context: machine paths, personal API keys pointers, etc.
+
+---
+
+## Architecture
+
+This template provides **no application code** — only the structure that gives Claude Code memory, rules, and an automated workflow.
+
+```
+├── CLAUDE.md                    ← Project rules read at every session start
 ├── .claude/
-│   ├── settings.json        ← Permissions allow/deny
-│   ├── agents/              ← Subagents pour investigations isolées
-│   ├── skills/              ← Workflows structurés
-│   └── commands/            ← Raccourcis slash
+│   ├── settings.json            ← Tool permissions (allow/deny)
+│   ├── commands/
+│   │   └── feature.md           ← /feature command (plan → execute → document)
+│   ├── skills/
+│   │   ├── writing-plans/       ← Atomic task plan generation
+│   │   ├── subagent-driven-development/  ← Isolated subagent per task + 2-stage review
+│   │   ├── verification-before-completion/  ← Evidence-before-claims gate
+│   │   └── systematic-debugging/  ← Root cause before fix, 4-phase process
+│   └── agents/                  ← Reserved for future investigation agents
 └── docs/
-    ├── project.md           ← Vision + scope
-    ├── architecture.md      ← Vue d'ensemble, intégrations, sécurité
-    ├── decisions/           ← ADRs (auto-générés)
-    ├── specs/               ← Specs de features (auto-générées)
-    ├── prompts/             ← Prompts réutilisables
-    └── journal/             ← Mémoire inter-sessions
+    ├── project.md               ← Vision, scope, users (fill on init)
+    ├── architecture.md          ← Stack, infra, decisions (fill on init, updated auto)
+    ├── decisions/               ← ADRs — auto-created on significant tech choices
+    ├── specs/features/          ← Feature specs — auto-created after each /feature
+    ├── superpowers/plans/       ← Implementation plans — auto-created by /feature
+    ├── prompts/                 ← Reusable prompts
+    └── journal/
+        └── session-notes.md     ← Inter-session memory (updated by /session-close)
 ```
+
+**What CLAUDE.md enforces at every session:**
+- Language: English (code, comments, commits, docs)
+- Commit format: `[TYPE]: description` (FEAT, FIX, REFACTOR, DOCS, TEST, CHORE, PERF, STYLE, REVERT)
+- Workflow: explore → plan → implement for any change touching 2+ files
+- Auto-documentation: feature spec + ADR + architecture update — silently, on every change
+- Secrets: env vars only, never in source
 
 ---
 
-## Chaîne de travail
+## Token costs & what this template optimizes
 
-```
-CONCEPTION                INITIALISATION        EXÉCUTION              RÉFLEXION
-──────────────────────    ──────────────        ──────────────         ──────────────
-Mammouth / Perplexity     Claude Code           Claude Code            Perplexity
-                                                                       + GitHub connector
-Explorer, arbitrer        Reçoit le résumé      Implémente             Lit le repo
-Prompt fin-de-            Remplit les docs      Documente auto         Génère un prompt
-conception ↓              Crée ADRs + specs     /session-close         → Claude Code
-Résumé structuré          Commite tout          /ship
-```
+Token cost is the real constraint of agentic development. Every session call is billed. This template is designed around minimizing waste.
 
-**Règle d'or** : ne lance Claude Code que sur quelque chose d'écrit dans le repo.
+### Where tokens go in a /feature run
 
-| Outil | Rôle |
+| Phase | Tokens | Optimization lever |
+|---|---|---|
+| Session start (CLAUDE.md + docs load) | ~2K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
+| Plan generation | ~5–10K | A precise /feature brief → correct plan first try → no re-generation |
+| Per task: implementation subagent | ~5–10K | Cheap/fast model for mechanical tasks (1-2 files, clear spec) |
+| Per task: spec compliance review | ~3–5K | Standard model |
+| Per task: code quality review | ~3–5K | Standard model |
+| Wrap-up (docs + session-notes) | ~2K | Fixed, unavoidable |
+| **Total for a 5-task feature** | **~60–90K tokens** | |
+
+### The 3 main optimization rules
+
+**1. Brainstorm outside Claude Code.**
+A brainstorming session with Claude consumes 20–50K tokens and produces 0 lines of code. Use any external tool instead.
+
+**2. Front-load context, not mid-session questions.**
+Claude asking clarifying questions mid-execution means the plan was incomplete. A precise /feature brief eliminates 80% of mid-session interruptions and re-runs.
+
+**3. Subagents have fresh context — by design.**
+Each subagent gets only the plan + its task. It does not inherit the full session history. This keeps per-task cost flat even on long features, and prevents context window degradation on task 10+.
+
+### What grows your bill fast
+
+- Keeping Claude in the conversation for exploration/discovery (use docs + external tools instead)
+- Large files in context (keep functions small, files focused)
+- Repeated failed tasks without a plan (no plan = no subagent = full-context re-runs)
+- Re-generating plans due to vague briefs
+
+---
+
+## Commands, skills & agents reference
+
+### Commands (`/`)
+
+| Command | What it does |
 |---|---|
-| **Mammouth** | Concevoir, arbitrer, produire le résumé de fin de session |
-| **Perplexity** | Veille tech, vérification de décisions, générer des prompts Claude Code |
-| **Claude Code** | Tout ce qui touche les fichiers du repo — init, implémentation, commit |
+| `/feature <brief>` | Full workflow: generate plan → human approval → subagent execution → docs update |
+| `/session-close` | Write session summary to `docs/journal/session-notes.md` |
 
----
+### Skills (auto-invoked by `/feature`)
 
-## Démarrer un projet
+| Skill | Trigger | What it enforces |
+|---|---|---|
+| `writing-plans` | Start of `/feature` | Atomic task plan with exact file paths, exact code, exact commands — no placeholders |
+| `subagent-driven-development` | After plan approval | Fresh subagent per task, continuous execution, spec + code quality review loops |
+| `verification-before-completion` | Before every commit claim | Must run and show verification command output before any success claim |
+| `systematic-debugging` | On any bug or test failure | 4-phase process: root cause → pattern → hypothesis → fix. No patches without root cause. |
 
-### Étape 1 — Concevoir (Mammouth / Perplexity)
+### Agents (`agents/`)
 
-Une fois ta session de conceptualisation terminée, colle ce prompt :
-
-```
-Nous venons de terminer notre session de conceptualisation.
-
-Fais-moi un résumé complet et structuré de tout ce qu'on a décidé,
-dans le format suivant — sans omettre d'information utile, sans remplissage :
-
-## Nom du projet
-## Vision
-## Objectif court terme
-## Utilisateurs / client
-## Features v1
-## Hors scope v1
-## Stack technique
-## Infrastructure
-## Intégrations externes
-## Contraintes
-## Décisions clés
-## Points de vigilance
-```
-
-### Étape 2 — Initialiser (Claude Code)
-
-1. `GitHub → Use this template → créer le repo projet`
-2. Ouvrir Claude Code dans le repo
-3. Coller :
-
-```
-Voici le résumé de ma session de conceptualisation.
-Initialise le projet en lançant le skill project-bootstrap.
-
-[résumé ici]
-```
-
-Claude remplit `docs/project.md`, `docs/architecture.md`, crée les ADRs et specs, commite tout.
-
----
-
-## Cycle de développement
-
-**Implémenter** : décris ce que tu veux en langage naturel. Claude implémente, documente les specs et ADRs concernés, commite — automatiquement.
-
-**Fermer la session** : `/session-close` — Claude écrit dans `docs/journal/session-notes.md` : fait / reste / décisions / prochaine action.
-
-**Reprendre** : `CLAUDE.md` + `docs/journal/session-notes.md` — le contexte est là.
-
----
-
-## Référence rapide
-
-| Commande | Usage |
+| Agent | Purpose |
 |---|---|
-| `/project-bootstrap` | Initialiser depuis un brief |
-| `/session-close` | Journal de fin de session |
-| `/ship` | Lint + test + deploy |
-
-| Agent | Usage |
-|---|---|
-| `architecture-investigator` | Explorer le codebase en isolation |
-| `reviewer` | Revue structurée avant `/ship` |
+| *(reserved)* | Add investigation agents here for large codebase exploration tasks |
 
 ---
 
 ## Setup
 
-**Activer le template** : Settings → General → Template repository ✓
-
-**Overrides personnels** : créer `CLAUDE.local.md` à la racine (dans `.gitignore`) pour du contexte local non commité.
+1. Go to your fork → **Settings → General → Template repository** ✓
+2. Fill `docs/project.md` and `docs/architecture.md` before the first session
+3. Run `/feature` for every new feature. Run `/session-close` at the end of every session.
