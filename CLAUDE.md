@@ -17,6 +17,20 @@
 - Before editing, identify impacted files and verification steps.
 - After implementation, run the smallest relevant test/lint command.
 
+## Model selection
+
+Default session model: `claude-sonnet-4-6` (set in `.claude/settings.json`).
+
+For subagent Task() dispatches, always specify `model=` explicitly:
+
+| Task type | Model |
+|---|---|
+| Mechanical (doc update, rename, mock, format) | `haiku` |
+| Standard (feature impl, tests, clear bug fix) | `sonnet` |
+| Complex (architecture, security, systemic debug) | `opus` |
+
+Never let a task run on Opus when Sonnet suffices. See `.claude/skills/subagent-driven-development/SKILL.md` for the full reviewer model rules.
+
 ## Commit conventions
 
 Use the following prefix format for all commits:

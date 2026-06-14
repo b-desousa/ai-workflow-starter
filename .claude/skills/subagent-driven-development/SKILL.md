@@ -7,7 +7,7 @@ description: Use when executing implementation plans with independent tasks in t
 
 Execute plan by dispatching a fresh subagent per task, with two-stage review after each: spec compliance first, then code quality.
 
-**Core principle:** Fresh subagent per task + two-stage review = high quality, fast iteration.
+**Core principle:** Fresh subagent per task + two-stage review = high quality, flat token cost per task regardless of feature length.
 
 **Continuous execution:** Do not pause between tasks. Do not ask "should I continue?". Execute all tasks from the plan without stopping. The only reasons to stop: BLOCKED status you cannot resolve, ambiguity that genuinely prevents progress, or all tasks complete.
 
@@ -28,9 +28,20 @@ Execute plan by dispatching a fresh subagent per task, with two-stage review aft
 
 ## Model Selection
 
-- Mechanical tasks (1-2 files, clear spec) → fast/cheap model
-- Integration tasks (multi-file, coordination) → standard model
-- Architecture/review tasks → most capable model
+Specify `model=` on every Task() dispatch. Never let a task default to Opus when Sonnet or Haiku suffices.
+
+| Task type | Examples | Model |
+|---|---|---|
+| **Mechanical** | Commit message, doc update, rename, generate mock, format file | `haiku` |
+| **Standard** | Implement a bounded feature, write tests, fix a clear bug, update spec | `sonnet` |
+| **Complex** | Security review, architectural ADR, systemic bug investigation, cross-cutting refactor | `opus` |
+
+**Default rule:** When in doubt, use `sonnet`. Upgrade to `opus` only when the task requires multi-step architectural reasoning. Downgrade to `haiku` only when the task is fully mechanical with no logic judgment required.
+
+**Reviewer model rule:**
+- Spec compliance review → `sonnet` (reads spec + diff, verifies match)
+- Code quality review → `sonnet` (style, naming, test coverage)
+- Final full-feature review → `opus` (cross-cutting quality gate)
 
 ## Handling Implementer Status
 
@@ -49,3 +60,4 @@ Execute plan by dispatching a fresh subagent per task, with two-stage review aft
 - Start code quality review before spec compliance is ✅
 - Move to next task with open issues
 - Accept "close enough" on spec compliance
+- Omit `model=` on a Task() dispatch
