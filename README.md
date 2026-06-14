@@ -1,6 +1,6 @@
 # ai-workflow-starter
 
-A Claude Code context template for solo developers. Gives Claude a structured project memory, an automated feature workflow, and disciplined agent behavior — with minimal token overhead.
+A Claude Code context template for solo developers. Gives Claude a structured project memory, an automated init + feature workflow, and disciplined agent behavior — with minimal token overhead.
 
 Maintained by [b-desousa](https://github.com/b-desousa) · Architecture SI & IA.
 
@@ -8,7 +8,15 @@ Maintained by [b-desousa](https://github.com/b-desousa) · Architecture SI & IA.
 
 ## How to use this workflow
 
-### 1. Create your project from this template
+### 1. Brainstorm outside Claude Code
+
+Do your conceptualization in any external tool (Perplexity, ChatGPT, notes, etc.).
+When done, ask the AI to fill `docs/prompts/project-brief-template.md` from your conversation.
+Review and correct the output.
+
+> **Why external?** Brainstorming in Claude Code costs 20–50K tokens and produces 0 lines of code.
+
+### 2. Clone this template and initialize the project
 
 ```bash
 # GitHub → Use this template → create repo
@@ -16,41 +24,49 @@ git clone <your-new-repo>
 cd <your-new-repo>
 ```
 
-Fill in the two required files before opening Claude Code:
-
-- `docs/project.md` — project vision, scope, target users, v1 features, out-of-scope
-- `docs/architecture.md` — stack, infrastructure, key integrations, constraints
-
-### 2. Brainstorm outside Claude Code
-
-Do your conceptualization and planning in any external tool (Perplexity, ChatGPT, notes, etc.).
-Do **not** use Claude Code for brainstorming — it consumes tokens without producing code.
-
-### 3. Open Claude Code and launch a feature
+Open Claude Code, then:
 
 ```
-/feature <your feature description or structured brief>
+/project-init [paste your filled project brief here]
 ```
 
 Claude will:
-1. Read `CLAUDE.md`, `docs/project.md`, `docs/architecture.md`, `docs/journal/session-notes.md`
+1. Fill `docs/project.md` and `docs/architecture.md` from your brief
+2. Create one ADR per key decision in `docs/decisions/`
+3. Create ADR stubs for open questions
+4. Initialize `docs/journal/session-notes.md`
+5. Commit everything: `[CHORE]: initialize project from brief`
+6. Print a summary of what was created and what's still open
+
+The repo is now ready for development. No code written yet.
+
+### 3. Implement features with /feature
+
+For each feature, fill `docs/prompts/feature-brief-template.md` (outside Claude Code), then:
+
+```
+/feature [paste your filled feature brief here]
+```
+
+Claude will:
+1. Read `docs/project.md`, `docs/architecture.md`, `docs/journal/session-notes.md`
 2. Write a full implementation plan → `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`
 3. Present a task summary and wait for your approval ← **your only checkpoint**
-4. Execute automatically: subagent per task → spec review → code quality review → commit
+4. Execute automatically: one subagent per task → spec review → code quality review → commit
 5. Update `docs/`, create ADRs if needed, update `session-notes.md`
 
-### 4. Close the session
+### 4. Close every session
 
 ```
 /session-close
 ```
 
-Claude writes the session summary to `docs/journal/session-notes.md` (done, open, decisions, next action).
-Next session, Claude reads it and resumes with full context.
+Claude writes to `docs/journal/session-notes.md`: done, open, decisions, next action.
+Next session, Claude reads it and resumes with full context — no re-briefing needed.
 
-### 5. Add a CLAUDE.local.md for personal overrides (optional)
+### 5. Personal overrides (optional)
 
-Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only context: machine paths, personal API keys pointers, etc.
+Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only context: machine paths, personal API key pointers, etc.
 
 ---
 
@@ -63,20 +79,24 @@ This template provides **no application code** — only the structure that gives
 ├── .claude/
 │   ├── settings.json            ← Tool permissions (allow/deny)
 │   ├── commands/
-│   │   └── feature.md           ← /feature command (plan → execute → document)
+│   │   ├── project-init.md      ← /project-init (fill docs from brief, create ADRs)
+│   │   ├── feature.md           ← /feature (plan → execute → document)
+│   │   └── session-close.md     ← /session-close (write session journal)
 │   ├── skills/
 │   │   ├── writing-plans/       ← Atomic task plan generation
 │   │   ├── subagent-driven-development/  ← Isolated subagent per task + 2-stage review
 │   │   ├── verification-before-completion/  ← Evidence-before-claims gate
 │   │   └── systematic-debugging/  ← Root cause before fix, 4-phase process
-│   └── agents/                  ← Reserved for future investigation agents
+│   └── agents/                  ← Reserved for investigation agents
 └── docs/
-    ├── project.md               ← Vision, scope, users (fill on init)
-    ├── architecture.md          ← Stack, infra, decisions (fill on init, updated auto)
-    ├── decisions/               ← ADRs — auto-created on significant tech choices
+    ├── project.md               ← Vision, scope, users (filled by /project-init)
+    ├── architecture.md          ← Stack, infra, decisions (filled by /project-init, updated auto)
+    ├── decisions/               ← ADRs — created by /project-init and auto-created on tech choices
     ├── specs/features/          ← Feature specs — auto-created after each /feature
     ├── superpowers/plans/       ← Implementation plans — auto-created by /feature
-    ├── prompts/                 ← Reusable prompts
+    ├── prompts/
+    │   ├── project-brief-template.md  ← Fill externally → give to /project-init
+    │   └── feature-brief-template.md  ← Fill externally → give to /feature
     └── journal/
         └── session-notes.md     ← Inter-session memory (updated by /session-close)
 ```
@@ -94,32 +114,31 @@ This template provides **no application code** — only the structure that gives
 
 Token cost is the real constraint of agentic development. Every session call is billed. This template is designed around minimizing waste.
 
-### Where tokens go in a /feature run
+### Where tokens go per command
 
 | Phase | Tokens | Optimization lever |
 |---|---|---|
+| `/project-init` (one-time) | ~8–15K | Replaces N clarification exchanges with a single structured brief |
 | Session start (CLAUDE.md + docs load) | ~2K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
-| Plan generation | ~5–10K | A precise /feature brief → correct plan first try → no re-generation |
-| Per task: implementation subagent | ~5–10K | Cheap/fast model for mechanical tasks (1-2 files, clear spec) |
-| Per task: spec compliance review | ~3–5K | Standard model |
-| Per task: code quality review | ~3–5K | Standard model |
-| Wrap-up (docs + session-notes) | ~2K | Fixed, unavoidable |
+| `/feature` plan generation | ~5–10K | A precise brief → correct plan first try → no re-generation |
+| Per task: implementation subagent | ~5–10K | Fresh context = no history baggage. Cheap model for mechanical tasks. |
+| Per task: spec + code quality review | ~6–10K | Two-stage, not one sprawling review |
+| `/session-close` wrap-up | ~2K | Fixed, unavoidable |
 | **Total for a 5-task feature** | **~60–90K tokens** | |
 
 ### The 3 main optimization rules
 
-**1. Brainstorm outside Claude Code.**
-A brainstorming session with Claude consumes 20–50K tokens and produces 0 lines of code. Use any external tool instead.
+**1. Brainstorm and init outside Claude Code.**
+Conceptualization + project init in Claude Code costs 50–100K tokens and produces 0 lines of code. Use external tools for brainstorming, then `/project-init` with a complete brief.
 
 **2. Front-load context, not mid-session questions.**
-Claude asking clarifying questions mid-execution means the plan was incomplete. A precise /feature brief eliminates 80% of mid-session interruptions and re-runs.
+Claude asking clarifying questions mid-execution means the plan was incomplete. A precise `/feature` brief eliminates 80% of mid-session interruptions and re-runs.
 
 **3. Subagents have fresh context — by design.**
 Each subagent gets only the plan + its task. It does not inherit the full session history. This keeps per-task cost flat even on long features, and prevents context window degradation on task 10+.
 
 ### What grows your bill fast
-
-- Keeping Claude in the conversation for exploration/discovery (use docs + external tools instead)
+- Keeping Claude in conversation for exploration/discovery (use docs + external tools instead)
 - Large files in context (keep functions small, files focused)
 - Repeated failed tasks without a plan (no plan = no subagent = full-context re-runs)
 - Re-generating plans due to vague briefs
@@ -132,10 +151,11 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 
 | Command | What it does |
 |---|---|
+| `/project-init <brief>` | One-time init: fills all docs, creates ADRs, commits everything |
 | `/feature <brief>` | Full workflow: generate plan → human approval → subagent execution → docs update |
 | `/session-close` | Write session summary to `docs/journal/session-notes.md` |
 
-### Skills (auto-invoked by `/feature`)
+### Skills (auto-invoked by commands)
 
 | Skill | Trigger | What it enforces |
 |---|---|---|
@@ -144,16 +164,16 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 | `verification-before-completion` | Before every commit claim | Must run and show verification command output before any success claim |
 | `systematic-debugging` | On any bug or test failure | 4-phase process: root cause → pattern → hypothesis → fix. No patches without root cause. |
 
-### Agents (`agents/`)
+### Prompts (`docs/prompts/`)
 
-| Agent | Purpose |
+| Template | When to use |
 |---|---|
-| *(reserved)* | Add investigation agents here for large codebase exploration tasks |
+| `project-brief-template.md` | Fill externally after brainstorm → paste into `/project-init` |
+| `feature-brief-template.md` | Fill externally before each feature → paste into `/feature` |
 
 ---
 
 ## Setup
 
 1. Go to your fork → **Settings → General → Template repository** ✓
-2. Fill `docs/project.md` and `docs/architecture.md` before the first session
-3. Run `/feature` for every new feature. Run `/session-close` at the end of every session.
+2. For each new project: clone → `/project-init [brief]` → `/feature` → `/session-close` → repeat
