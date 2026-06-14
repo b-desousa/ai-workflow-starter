@@ -1,23 +1,67 @@
-# Session notes
+# Session Notes
 
-> Append a new entry at the end of each working session using `/session-close`.
-> This is the project's long-term memory between Claude Code sessions.
+> This file is the AI session memory. Updated at the end of every session via `/session-close`.
+> It gives Claude instant context on the current state of the project without re-reading the whole codebase.
 
 ---
 
-## 2026-05-25 — Initial setup
+## Project state
 
-**Done**
-- Created ai-workflow-starter repo structure.
-- Defined CLAUDE.md, skills, agents, ADR templates, spec templates, runbooks.
+<!-- One-line summary of where the project stands right now -->
+> _Not started — template only._
 
-**Pending**
-- Fill vision.md and scope.md for first real project.
-- Complete ADR-001 stack choice.
-- Create first feature spec.
+## Stack
 
-**Decisions**
-- ADR-002: Split context into layers instead of monolithic context.md.
+<!-- Fill once decided. Example: Next.js 15 · Postgres · Drizzle ORM · Tailwind -->
+> _TBD_
 
-**Next**
-- Run `project-bootstrap` skill on first real project.
+---
+
+## Last session
+
+**Date:** <!-- YYYY-MM-DD -->  
+**Duration:** <!-- e.g. ~45 min -->  
+**Focus:** <!-- What was the main goal of the session? -->
+
+### Done
+
+- <!-- [FEAT]: ... -->
+- <!-- [FIX]: ... -->
+
+### Decisions made
+
+- <!-- Why X was chosen over Y -->
+
+### Left open / TODO
+
+- <!-- Unfinished work, known issues, next steps -->
+
+---
+
+## Active context
+
+### Files recently changed
+
+<!-- List of files touched in the last 1-2 sessions -->
+- _none_
+
+### Known issues
+
+<!-- Bugs, TODOs, or tech debt worth surfacing to Claude immediately -->
+- _none_
+
+### Pending decisions
+
+<!-- Architecture or design choices not yet resolved -->
+- _none_
+
+---
+
+## Session history
+
+<!-- One line per past session, newest first -->
+<!-- Format: YYYY-MM-DD | [TYPE] short summary -->
+
+| Date | Summary |
+|------|---------|
+| —    | _template created_ |
