@@ -108,9 +108,12 @@ npm start            # or: docker compose up
 
 - Project vision & scope → `@docs/project.md`
 - Architecture → `@docs/architecture.md`
-- Feature specs → `@docs/specs/features/`
-- Decisions → `@docs/decisions/`
-- Session memory → `@docs/journal/session-notes.md`
+- Session memory → `@docs/journal/session-notes.md` (Active section only)
+
+> **ADRs and feature specs are not loaded by default.**
+> Load `@docs/decisions/` only when a task involves an architecture or dependency choice.
+> Load `@docs/specs/features/` only when a task modifies an existing feature.
+> Use `@architecture-investigator` for broad historical exploration.
 
 ## Context rules
 
