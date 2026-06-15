@@ -55,7 +55,22 @@ Claude will:
 4. Execute automatically: one subagent per task → spec review → code quality review → commit
 5. Update `docs/`, create ADRs if needed, update `session-notes.md`
 
-### 4. Close every session
+### 4. Investigate architecture questions with /investigate
+
+When you need to explore the codebase without touching code — before an ADR, before a refactor, or to map dependencies:
+
+```
+/investigate <your architecture question or topic>
+```
+
+Claude will:
+1. Dispatch the `architecture-investigator` agent in read-only mode
+2. Return a structured report: answer + impacted files + open questions + draft ADR if a decision is needed
+3. Never modify any file
+
+> **When to use it:** codebase > ~30 files, unfamiliar zone, or before any decision that needs an ADR.
+
+### 5. Close every session
 
 ```
 /session-close
@@ -64,7 +79,7 @@ Claude will:
 Claude writes to `docs/journal/session-notes.md`: done, open, decisions, next action.
 Next session, Claude reads it and resumes with full context — no re-briefing needed.
 
-### 5. Personal overrides (optional)
+### 6. Personal overrides (optional)
 
 Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only context: machine paths, personal API key pointers, etc.
 
@@ -81,6 +96,7 @@ This template provides **no application code** — only the structure that gives
 │   ├── commands/
 │   │   ├── project-init.md      ← /project-init (fill docs from brief, create ADRs)
 │   │   ├── feature.md           ← /feature (plan → execute → document)
+│   │   ├── investigate.md       ← /investigate (read-only codebase exploration, ADR prep)
 │   │   └── session-close.md     ← /session-close (write session journal)
 │   ├── skills/
 │   │   ├── writing-plans/       ← Atomic task plan generation
@@ -123,6 +139,7 @@ Token cost is the real constraint of agentic development. Every session call is 
 | `/project-init` (one-time) | ~8–15K | Replaces N clarification exchanges with a single structured brief |
 | Session start (CLAUDE.md + docs load) | ~2K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
 | `/feature` plan generation | ~5–10K | A precise brief → correct plan first try → no re-generation |
+| `/investigate` (on-demand) | ~3–8K | Isolated read-only pass — no context pollution, no wasted implementation tokens |
 | Per task: implementation subagent | ~5–10K | Fresh context = no history baggage. `haiku` for mechanical tasks. |
 | Per task: spec + code quality review | ~6–10K | `sonnet` for both, `opus` only for final cross-cutting review |
 | `/session-close` wrap-up | ~2K | Fixed, unavoidable |
@@ -155,6 +172,7 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 |---|---|
 | `/project-init <brief>` | One-time init: fills all docs, creates ADRs, commits everything |
 | `/feature <brief>` | Full workflow: generate plan → human approval → subagent execution → docs update |
+| `/investigate <question>` | Read-only codebase exploration: answer + impacted files + risks + draft ADR |
 | `/session-close` | Write session summary to `docs/journal/session-notes.md` |
 
 ### Skills (auto-invoked by commands)
@@ -166,11 +184,11 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 | `verification-before-completion` | Before every commit claim | Must run and show verification command output before any success claim |
 | `systematic-debugging` | On any bug or test failure | 4-phase process: root cause → pattern → hypothesis → fix. No patches without root cause. |
 
-### Agents (invoke manually when needed)
+### Agents (invoke via `/investigate` or manually)
 
-| Agent | When to use |
-|---|---|
-| `architecture-investigator` | Wide codebase exploration to answer architecture questions, map dependencies, or prepare an ADR — without polluting the main session context |
+| Agent | How to invoke | When to use |
+|---|---|---|
+| `architecture-investigator` | `/investigate <question>` | Wide codebase exploration to answer architecture questions, map dependencies, or prepare an ADR — without polluting the main session context |
 
 ### Prompts (`docs/prompts/`)
 
