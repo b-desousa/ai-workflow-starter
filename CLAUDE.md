@@ -21,6 +21,8 @@
 
 Default session model: `claude-sonnet-4-6` (set in `.claude/settings.json`).
 
+> **Keeping models up to date:** Claude Code requires an exact model identifier in `settings.json` — there is no `latest` alias. When Anthropic releases a new version, update the `"model"` field in `.claude/settings.json` manually. Check [https://docs.anthropic.com/en/docs/about-claude/models](https://docs.anthropic.com/en/docs/about-claude/models) for the current recommended model string. This is a 30-second update per project clone.
+
 For subagent Task() dispatches, always specify `model=` explicitly:
 
 | Task type | Model |
