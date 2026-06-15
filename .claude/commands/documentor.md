@@ -1,17 +1,18 @@
 ---
-description: Adopt an existing project into the ai-workflow-starter memory structure. Reads the codebase, generates or enriches docs/, commits before and after. No code changes. Can be used standalone by copying this single file into .claude/commands/ of any repo.
+description: Adopt an existing project into the ai-workflow-starter memory structure. Reads the codebase, generates or enriches docs/, wires the memory map into CLAUDE.md, commits before and after. No code changes. Can be used standalone by copying this single file into .claude/commands/ of any repo.
 ---
 
 # /documentor
 
-You are about to document an existing project. No code will be modified. The only output is a structured `docs/` memory layer that future Claude Code sessions can use.
+You are about to document an existing project. No code will be modified. The only output is a structured `docs/` memory layer and a `CLAUDE.md` documentation map that future Claude Code sessions can use to load context automatically.
 
 ## Principles
 
 - **Read-first**: explore the entire codebase before writing a single doc file.
 - **Preserve existing docs**: if a `docs/` already exists, read it fully and enrich it — never overwrite content that is already correct.
+- **Preserve existing CLAUDE.md**: if a `CLAUDE.md` already exists, only append the `## Documentation map` section — never modify the rest.
 - **Commit safety**: always create a snapshot commit before any change, and a final commit after. Both are mandatory.
-- **No code changes**: never modify any file outside of `docs/`.
+- **No code changes**: never modify any file except `docs/` and `CLAUDE.md`.
 - **Honest gaps**: if you cannot infer something with confidence, mark it `[TO FILL]` rather than hallucinating.
 - **Template-aware**: fetch the latest reference structure from the ai-workflow-starter template at runtime (Step 2).
 - **Closed file list**: only create the exact files listed in Step 4. Do not create any additional files, indexes, summaries, or extra docs — even if they seem useful. If in doubt, use `[TO FILL]` inside an existing file instead.
@@ -134,14 +135,39 @@ Also create `Proposed` ADRs for open questions identified in Step 3.
 - [any inconsistencies or gaps found during exploration]
 ```
 
-## Step 5 — Final commit
+## Step 5 — Wire the documentation map into CLAUDE.md
+
+This step ensures Claude automatically loads the memory layer at every future session start.
+
+**If `CLAUDE.md` already exists:**
+Check if it already contains a `## Documentation map` section.
+- If yes: verify it references the four files below, update if incomplete, do not touch anything else.
+- If no: append the following block at the end of the file.
+
+**If `CLAUDE.md` does not exist:**
+Create it with only the following content:
+
+```markdown
+# CLAUDE.md
+
+## Documentation map
+
+- Project vision & scope → `@docs/project.md`
+- Architecture → `@docs/architecture.md`
+- Session memory → `@docs/journal/session-notes.md` (Active section only)
+
+> ADRs and feature specs are not loaded by default.
+> Load `@docs/decisions/` only when a task involves an architecture or dependency choice.
+```
+
+## Step 6 — Final commit
 
 ```bash
-git add docs/
+git add docs/ CLAUDE.md
 git commit -m "[DOCS]: generate project memory via documentor"
 ```
 
-## Step 6 — Print summary
+## Step 7 — Print summary
 
 ```
 Documentor complete.
@@ -154,6 +180,7 @@ Files created or updated:
 - docs/architecture.md           [created | enriched]
 - docs/decisions/                N ADRs (X Accepted, Y Proposed)
 - docs/journal/session-notes.md  [created | enriched]
+- CLAUDE.md                      [created | ## Documentation map appended]
 
 Open questions (Proposed ADRs):
 - [list]
