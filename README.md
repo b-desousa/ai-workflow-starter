@@ -75,19 +75,20 @@ Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only contex
 This template provides **no application code** — only the structure that gives Claude Code memory, rules, and an automated workflow.
 
 ```
-├── CLAUDE.md                    ← Project rules read at every session start
+├── CLAUDE.md                    ← Project rules + model selection, read at every session start
 ├── .claude/
-│   ├── settings.json            ← Tool permissions (allow/deny)
+│   ├── settings.json            ← Default model (sonnet) + tool permissions (allow/deny)
 │   ├── commands/
 │   │   ├── project-init.md      ← /project-init (fill docs from brief, create ADRs)
 │   │   ├── feature.md           ← /feature (plan → execute → document)
 │   │   └── session-close.md     ← /session-close (write session journal)
 │   ├── skills/
 │   │   ├── writing-plans/       ← Atomic task plan generation
-│   │   ├── subagent-driven-development/  ← Isolated subagent per task + 2-stage review
+│   │   ├── subagent-driven-development/  ← Isolated subagent per task + model selection + 2-stage review
 │   │   ├── verification-before-completion/  ← Evidence-before-claims gate
 │   │   └── systematic-debugging/  ← Root cause before fix, 4-phase process
-│   └── agents/                  ← Reserved for investigation agents
+│   └── agents/
+│       └── architecture-investigator.md  ← Wide codebase exploration without polluting main context
 └── docs/
     ├── project.md               ← Vision, scope, users (filled by /project-init)
     ├── architecture.md          ← Stack, infra, decisions (filled by /project-init, updated auto)
@@ -104,6 +105,7 @@ This template provides **no application code** — only the structure that gives
 **What CLAUDE.md enforces at every session:**
 - Language: English (code, comments, commits, docs)
 - Commit format: `[TYPE]: description` (FEAT, FIX, REFACTOR, DOCS, TEST, CHORE, PERF, STYLE, REVERT)
+- Model selection: `sonnet` default, `haiku` for mechanical tasks, `opus` for architectural decisions
 - Workflow: explore → plan → implement for any change touching 2+ files
 - Auto-documentation: feature spec + ADR + architecture update — silently, on every change
 - Secrets: env vars only, never in source
@@ -121,8 +123,8 @@ Token cost is the real constraint of agentic development. Every session call is 
 | `/project-init` (one-time) | ~8–15K | Replaces N clarification exchanges with a single structured brief |
 | Session start (CLAUDE.md + docs load) | ~2K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
 | `/feature` plan generation | ~5–10K | A precise brief → correct plan first try → no re-generation |
-| Per task: implementation subagent | ~5–10K | Fresh context = no history baggage. Cheap model for mechanical tasks. |
-| Per task: spec + code quality review | ~6–10K | Two-stage, not one sprawling review |
+| Per task: implementation subagent | ~5–10K | Fresh context = no history baggage. `haiku` for mechanical tasks. |
+| Per task: spec + code quality review | ~6–10K | `sonnet` for both, `opus` only for final cross-cutting review |
 | `/session-close` wrap-up | ~2K | Fixed, unavoidable |
 | **Total for a 5-task feature** | **~60–90K tokens** | |
 
@@ -160,9 +162,15 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 | Skill | Trigger | What it enforces |
 |---|---|---|
 | `writing-plans` | Start of `/feature` | Atomic task plan with exact file paths, exact code, exact commands — no placeholders |
-| `subagent-driven-development` | After plan approval | Fresh subagent per task, continuous execution, spec + code quality review loops |
+| `subagent-driven-development` | After plan approval | Fresh subagent per task, model selection per task type, spec + code quality review loops |
 | `verification-before-completion` | Before every commit claim | Must run and show verification command output before any success claim |
 | `systematic-debugging` | On any bug or test failure | 4-phase process: root cause → pattern → hypothesis → fix. No patches without root cause. |
+
+### Agents (invoke manually when needed)
+
+| Agent | When to use |
+|---|---|
+| `architecture-investigator` | Wide codebase exploration to answer architecture questions, map dependencies, or prepare an ADR — without polluting the main session context |
 
 ### Prompts (`docs/prompts/`)
 
