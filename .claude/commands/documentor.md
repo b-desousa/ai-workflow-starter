@@ -1,44 +1,161 @@
 ---
-description: Adopt an existing project into the ai-workflow-starter memory structure. Reads the codebase, generates or enriches docs/, commits before and after. No code changes.
+description: Adopt an existing project into the ai-workflow-starter memory structure. Reads the codebase, generates or enriches docs/, commits before and after. No code changes. Can be used standalone by copying this single file into .claude/commands/ of any repo.
 ---
 
 # /documentor
 
 You are about to document an existing project. No code will be modified. The only output is a structured `docs/` memory layer that future Claude Code sessions can use.
 
-## What this command does
+## Principles
 
-1. **Snapshot commit** — saves current state before any change (guaranteed restore point)
-2. **Fetches the template reference** — reads the latest ai-workflow-starter structure at runtime
-3. **Explores the codebase** — reads all source files, configs, existing docs, git history
-4. **Generates or enriches `docs/`** — project.md, architecture.md, ADRs, session-notes.md
-5. **Final commit** — seals the new memory layer
+- **Read-first**: explore the entire codebase before writing a single doc file.
+- **Preserve existing docs**: if a `docs/` already exists, read it fully and enrich it — never overwrite content that is already correct.
+- **Commit safety**: always create a snapshot commit before any change, and a final commit after. Both are mandatory.
+- **No code changes**: never modify any file outside of `docs/`.
+- **Honest gaps**: if you cannot infer something with confidence, mark it `[TO FILL]` rather than hallucinating.
+- **Template-aware**: fetch the latest reference structure from the ai-workflow-starter template at runtime (Step 2).
 
-## Constraints
+## Step 1 — Safety snapshot commit
 
-- Never modifies code, tests, or config files
-- If `docs/` already exists, enriches it — never overwrites correct content
-- Marks uncertain inferences as `[TO FILL]` rather than hallucinating
-- Both commits are mandatory — do not skip either one
+Before touching anything, commit the current state:
 
-## Dispatch
-
-Use the `documentor` agent:
-
-```
-Task(
-  agent="documentor",
-  model="claude-sonnet-4-5",
-  prompt="Adopt this project: read the full codebase, generate the docs/ memory layer, commit before and after."
-)
+```bash
+git add -A
+git commit -m "[CHORE]: snapshot before documentor — $(date +%Y-%m-%d)"
 ```
 
-## After completion
+If the tree is already clean, create an empty marker commit:
 
-Review the `[TO FILL]` items printed in the summary and fill them manually or via a follow-up `/feature` brief.
+```bash
+git commit --allow-empty -m "[CHORE]: snapshot before documentor — $(date +%Y-%m-%d)"
+```
 
-The project is now ready for the standard workflow:
+This gives the user a guaranteed restore point.
+
+## Step 2 — Fetch template reference (runtime)
+
+Fetch the current structure from the template to stay up to date:
+
+```bash
+curl -s https://raw.githubusercontent.com/b-desousa/ai-workflow-starter/main/README.md
+curl -s https://raw.githubusercontent.com/b-desousa/ai-workflow-starter/main/CLAUDE.md
 ```
-/feature [brief]
-/session-close
+
+Use these as your reference for what `docs/` should contain and how it should be structured. Adapt to the project at hand — do not copy verbatim.
+
+## Step 3 — Explore the codebase
+
+Read broadly before writing anything:
+
+- All source files (code, configs, Dockerfiles, CI, package manifests)
+- Existing `README.md`, `docs/`, wikis, or any `.md` files at root
+- Commit history: `git log --oneline -30`
+- Open issues or PR descriptions if accessible
+
+Extract:
+- **Project intent** — what does this do, for whom?
+- **Stack** — languages, frameworks, databases, infra
+- **Architecture** — key modules, data flow, external dependencies
+- **Implicit decisions** — tech choices already made, even if undocumented
+- **Open questions** — things that seem unresolved or inconsistent
+
+## Step 4 — Generate or enrich docs/
+
+Create or update the following files. If a file already exists, read it first, then add only what is missing or incorrect.
+
+### `docs/project.md`
+Vision, scope, target users, success criteria, out-of-scope.
+Keep under 300 words. This file is loaded at every session start.
+
+### `docs/architecture.md`
+Stack, infra, key modules, data flow, external dependencies, known constraints.
+Keep under 400 words.
+
+### `docs/decisions/` — ADRs
+
+One ADR per significant technical decision already made in the codebase. Template:
+
+```markdown
+# ADR-NNN: <title>
+
+**Date:** YYYY-MM-DD
+**Status:** Accepted
+
+## Context
+[Why this decision was needed]
+
+## Decision
+[What was decided]
+
+## Consequences
+[Trade-offs, what this enables or constrains]
 ```
+
+Also create `Proposed` ADRs for open questions identified in Step 3.
+
+### `docs/journal/session-notes.md`
+
+```markdown
+## Active
+
+### Project state
+[One-line: what the project is and where it stands]
+
+### Stack
+[Detected stack]
+
+### Last session
+
+**Date:** YYYY-MM-DD
+**Focus:** Documentation setup via /documentor
+
+#### Done
+- [DOCS]: generated project memory from existing codebase
+
+#### Left open / TODO
+- [list open questions or Proposed ADRs]
+
+### Pending decisions
+- [from Proposed ADRs]
+
+### Known issues
+- [any inconsistencies or gaps found during exploration]
+```
+
+## Step 5 — Final commit
+
+```bash
+git add docs/
+git commit -m "[DOCS]: generate project memory via documentor"
+```
+
+## Step 6 — Print summary
+
+```
+Documentor complete.
+
+Snapshot commit: [CHORE]: snapshot before documentor — YYYY-MM-DD
+Final commit:    [DOCS]: generate project memory via documentor
+
+Files created or updated:
+- docs/project.md          [created | enriched]
+- docs/architecture.md     [created | enriched]
+- docs/decisions/          N ADRs (X Accepted, Y Proposed)
+- docs/journal/session-notes.md  [created | enriched]
+
+Open questions (Proposed ADRs):
+- [list]
+
+[TO FILL] items requiring human input:
+- [list anything marked TO FILL]
+```
+
+---
+
+> **Standalone usage** — to use this command on any existing repo without cloning the full template:
+> ```bash
+> mkdir -p .claude/commands
+> curl -s https://raw.githubusercontent.com/b-desousa/ai-workflow-starter/main/.claude/commands/documentor.md \
+>   -o .claude/commands/documentor.md
+> ```
+> Then open Claude Code and run `/documentor`.
