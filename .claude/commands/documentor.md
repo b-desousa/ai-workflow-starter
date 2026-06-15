@@ -6,6 +6,17 @@ description: Adopt an existing project into the ai-workflow-starter memory struc
 
 You are about to document an existing project. No code will be modified. The only output is a structured `docs/` memory layer and a `CLAUDE.md` documentation map that future Claude Code sessions can use to load context automatically.
 
+## Token strategy
+
+This command is split across two model tiers to minimize cost:
+
+| Phase | Steps | Model | Rationale |
+|---|---|---|---|
+| Exploration & extraction | 1–3 | `claude-haiku-4-5` | Mechanical reading, listing, extracting — no generation needed |
+| Generation & synthesis | 4–7 | `claude-sonnet-4-5` | Writing docs, ADRs, session notes — quality matters here |
+
+**How to apply this in Claude Code:** run `/model haiku` before Step 3, then `/model sonnet` before Step 4. If you are running in an automated pipeline, dispatch Steps 1–3 as a sub-agent with `model: claude-haiku-4-5` and Steps 4–7 with `model: claude-sonnet-4-5`.
+
 ## Principles
 
 - **Read-first**: explore the entire codebase before writing a single doc file.
@@ -16,6 +27,10 @@ You are about to document an existing project. No code will be modified. The onl
 - **Honest gaps**: if you cannot infer something with confidence, mark it `[TO FILL]` rather than hallucinating.
 - **Template-aware**: fetch the latest reference structure from the ai-workflow-starter template at runtime (Step 2).
 - **Closed file list**: only create the exact files listed in Step 4. Do not create any additional files, indexes, summaries, or extra docs — even if they seem useful. If in doubt, use `[TO FILL]` inside an existing file instead.
+
+---
+
+## ┌ HAIKU PHASE ── Steps 1–3 (exploration)
 
 ## Step 1 — Safety snapshot commit
 
@@ -54,12 +69,20 @@ Read broadly before writing anything:
 - Commit history: `git log --oneline -30`
 - Open issues or PR descriptions if accessible
 
-Extract:
+Produce an **internal extraction note** (not written to disk) covering:
 - **Project intent** — what does this do, for whom?
 - **Stack** — languages, frameworks, databases, infra
 - **Architecture** — key modules, data flow, external dependencies
 - **Implicit decisions** — tech choices already made, even if undocumented
 - **Open questions** — things that seem unresolved or inconsistent
+
+This note is passed as context to the Sonnet phase. It should be dense and factual — no prose, no formatting, just lists.
+
+## └ END HAIKU PHASE
+
+---
+
+## ┌ SONNET PHASE ── Steps 4–7 (generation)
 
 ## Step 4 — Generate or enrich docs/
 
@@ -188,6 +211,8 @@ Open questions (Proposed ADRs):
 [TO FILL] items requiring human input:
 - [list anything marked TO FILL]
 ```
+
+## └ END SONNET PHASE
 
 ---
 
