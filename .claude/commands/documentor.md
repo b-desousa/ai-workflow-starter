@@ -14,6 +14,7 @@ You are about to document an existing project. No code will be modified. The onl
 - **No code changes**: never modify any file outside of `docs/`.
 - **Honest gaps**: if you cannot infer something with confidence, mark it `[TO FILL]` rather than hallucinating.
 - **Template-aware**: fetch the latest reference structure from the ai-workflow-starter template at runtime (Step 2).
+- **Closed file list**: only create the exact files listed in Step 4. Do not create any additional files, indexes, summaries, or extra docs — even if they seem useful. If in doubt, use `[TO FILL]` inside an existing file instead.
 
 ## Step 1 — Safety snapshot commit
 
@@ -61,7 +62,18 @@ Extract:
 
 ## Step 4 — Generate or enrich docs/
 
-Create or update the following files. If a file already exists, read it first, then add only what is missing or incorrect.
+**Allowed output files — exactly these, nothing else:**
+
+```
+docs/project.md
+docs/architecture.md
+docs/decisions/ADR-NNN-<slug>.md   (one per decision, as many as needed)
+docs/journal/session-notes.md
+```
+
+Do not create any other file. Do not create indexes, summaries, MEMORY.md, README.md, or any file not listed above. Extra information that does not fit these four targets should be added as a `[TO FILL]` note inside the closest relevant file.
+
+If a file already exists, read it first, then add only what is missing or incorrect.
 
 ### `docs/project.md`
 Vision, scope, target users, success criteria, out-of-scope.
@@ -138,9 +150,9 @@ Snapshot commit: [CHORE]: snapshot before documentor — YYYY-MM-DD
 Final commit:    [DOCS]: generate project memory via documentor
 
 Files created or updated:
-- docs/project.md          [created | enriched]
-- docs/architecture.md     [created | enriched]
-- docs/decisions/          N ADRs (X Accepted, Y Proposed)
+- docs/project.md                [created | enriched]
+- docs/architecture.md           [created | enriched]
+- docs/decisions/                N ADRs (X Accepted, Y Proposed)
 - docs/journal/session-notes.md  [created | enriched]
 
 Open questions (Proposed ADRs):
