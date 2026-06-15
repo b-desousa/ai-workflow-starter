@@ -38,16 +38,21 @@ Once approved, use the `subagent-driven-development` skill:
 - After each task: two-stage review (spec compliance → code quality), fix loops if needed
 - Use `verification-before-completion` before every commit claim
 - Mark each task done in TodoWrite
-- After all tasks: dispatch final reviewer, then run `/session-close` equivalent
+- After all tasks: dispatch final reviewer
 
 **Do not pause between tasks. Do not ask "should I continue?". Execute the full plan.**
 
 ## Step 3 — Wrap up
 
-- Update `docs/journal/session-notes.md` (Last session, Active context, Session history)
-- Update `docs/architecture.md` if structure changed
-- Create or update `docs/specs/features/<slug>.md`
-- Final commit: `[DOCS]: update session notes and feature spec`
+Update `docs/journal/session-notes.md` following the Active/History structure:
+
+1. **Rewrite `### Last session`** in `## Active` with what was just done, decisions made, and what remains open
+2. **Update `### Known issues`** and `### Pending decisions`** in `## Active` if anything changed
+3. **Archive the previous session entry** to `## History` (one-line table row, newest first)
+4. Update `docs/architecture.md` if structure changed
+5. Create or update `docs/specs/features/<slug>.md`
+
+Final commit: `[DOCS]: update session notes and feature spec`
 
 ## On bugs encountered during execution
 

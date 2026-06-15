@@ -1,138 +1,87 @@
 ---
-description: Initialize a new project from a filled project brief. Run once after cloning the template. Provide the complete filled brief from docs/prompts/project-brief-template.md.
+description: One-time project initialization from a project brief. Fills all docs, creates ADRs, initializes session memory.
 ---
 
 # /project-init
 
-You are initializing a brand-new project from a human-provided brief. This command runs **once**, on a fresh clone of the template. Your job is to translate the brief into structured project documentation, create initial ADRs, and leave the repo ready for the first `/feature`.
+You are initializing a new project from a brief provided by the human. The brief was written outside Claude Code. Your job is to translate it into structured project memory — no code, no implementation.
 
-## Step 1 — Parse the brief
+## Step 1 — Fill core docs
 
-Read the brief provided by the human. Extract:
-- Project name, vision, short-term objective, users
-- Features v1 and out-of-scope v1
-- Tech stack, infrastructure, external integrations, constraints
-- Key decisions (each becomes an ADR)
-- Open questions (each becomes an ADR stub with status: proposed)
-- Risks and watch points
+From the brief, write:
 
-If the brief is missing critical sections (Vision, Features v1, Stack), ask for them before proceeding. Do not invent them.
+- **`docs/project.md`** — vision, scope, target users, success criteria, out-of-scope
+- **`docs/architecture.md`** — chosen stack, infra, key technical constraints, external dependencies
 
-## Step 2 — Fill docs/project.md
+Be concise. These files will be loaded at every session start — keep them under 300 words each.
 
-Write `docs/project.md` with this structure:
+## Step 2 — Create ADRs
 
-```markdown
-# [Project name]
+For each significant technical decision in the brief:
+- Create `docs/decisions/YYYY-MM-DD-<decision-slug>.md` using the template in `docs/decisions/`
+- Status: `Accepted` for decided choices, `Proposed` for open questions
 
-## Vision
-[from brief]
+Minimum: one ADR per major dependency or architectural pattern chosen.
 
-## Short-term objective
-[from brief]
+## Step 3 — Initialize session memory
 
-## Users
-[from brief]
+Write `docs/journal/session-notes.md` — `## Active` section only.
 
-## Features v1
-[from brief — bulleted list]
-
-## Out of scope v1
-[from brief — bulleted list]
-
-## Risks & watch points
-[from brief]
-```
-
-## Step 3 — Fill docs/architecture.md
-
-Write `docs/architecture.md` with this structure:
+Fill it with real content from the brief:
 
 ```markdown
-# Architecture — [Project name]
+## Active
 
-## Stack
-[from brief]
+### Project state
+[One-line: what the project is and where it stands — e.g. "Auth service — initialized, no code yet"]
 
-## Infrastructure
-[from brief]
+### Stack
+[Stack line from brief — e.g. "FastAPI · Postgres · SQLAlchemy · Docker"]
 
-## External integrations
-[from brief]
+### Last session
 
-## Constraints
-[from brief]
+**Date:** YYYY-MM-DD  
+**Duration:** ~X min  
+**Focus:** Project initialization from brief
 
-## Security notes
-- Secrets via environment variables only, never in source
-- [Add any constraint-derived security notes from brief]
+#### Done
+- [DOCS]: initialized project from brief
+- [DOCS]: created ADRs for [list key decisions]
+
+#### Left open / TODO
+- [First feature to implement, from brief]
+- [Any open architectural question flagged as Proposed ADR]
+
+### Pending decisions
+- [Open choices not yet resolved — from Proposed ADRs]
+
+### Known issues
+- _none_
 ```
 
-## Step 4 — Create ADRs
+Leave `## History` as-is (template row only).
 
-For each **Key decision** in the brief, create `docs/decisions/ADR-NNN-<slug>.md`:
+## Step 4 — Commit everything
 
-```markdown
-# ADR-NNN: [Decision title]
-
-Date: YYYY-MM-DD  
-Status: accepted
-
-## Context
-[Why this decision was needed]
-
-## Decision
-[What was decided]
-
-## Rationale
-[One-line reason from brief]
-
-## Consequences
-[What this implies for the project]
-```
-
-For each **Open question**, create `docs/decisions/ADR-NNN-<slug>.md` with status: `proposed` and leave Decision + Rationale as `TBD`.
-
-Number ADRs sequentially starting at ADR-001.
-
-## Step 5 — Initialize session notes
-
-Write the initial entry in `docs/journal/session-notes.md`:
-- Stack: from brief
-- Last session: "Project initialization from brief"
-- Done: list the files created
-- Open: list the open question ADRs
-
-## Step 6 — Commit everything
-
+Single commit:
 ```
 [CHORE]: initialize project from brief
 ```
 
-Single commit containing all created/modified files.
-
-## Step 7 — Print summary
-
-After committing, print:
+## Step 5 — Print summary
 
 ```
 Project initialized.
 
-Created:
-  docs/project.md
-  docs/architecture.md
-  docs/decisions/ADR-001-*.md  (N files)
-  docs/journal/session-notes.md
+Docs created:
+- docs/project.md
+- docs/architecture.md
+- docs/decisions/ (N ADRs)
+- docs/journal/session-notes.md
 
-Open questions (ADRs with status: proposed):
-  [list them]
+Open decisions (Proposed ADRs):
+- [list]
 
-Ready for /feature.
+Suggested first /feature:
+- [first feature from brief, or "not specified"]
 ```
-
-## Rules
-
-- Never invent information not present in the brief
-- Never start coding — this command creates documentation only
-- If a section is missing from the brief, note it in the summary as "missing: [section]" and leave the corresponding doc section empty with a `<!-- TODO -->` comment
-- One commit, no WIP commits
