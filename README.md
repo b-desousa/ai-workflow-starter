@@ -70,7 +70,25 @@ Claude will:
 
 > **When to use it:** codebase > ~30 files, unfamiliar zone, or before any decision that needs an ADR.
 
-### 5. Close every session
+### 5. Adopt an existing project with /documentor
+
+Starting from a repo that wasn't built with this template? Run `/documentor` once to generate the full `docs/` memory layer from the existing codebase:
+
+```
+/documentor
+```
+
+Claude will:
+1. Commit the current state as a snapshot (guaranteed restore point)
+2. Read the latest template structure from GitHub at runtime
+3. Explore the full codebase: source files, configs, git history, existing docs
+4. Generate or enrich `docs/project.md`, `docs/architecture.md`, ADRs, `session-notes.md`
+5. Commit the new memory layer
+6. Print a summary of what was created and what needs human input (`[TO FILL]` items)
+
+> **No code is ever modified.** If `docs/` already exists, the agent enriches it without overwriting correct content.
+
+### 6. Close every session
 
 ```
 /session-close
@@ -79,7 +97,7 @@ Claude will:
 Claude writes to `docs/journal/session-notes.md`: done, open, decisions, next action.
 Next session, Claude reads it and resumes with full context — no re-briefing needed.
 
-### 6. Personal overrides (optional)
+### 7. Personal overrides (optional)
 
 Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only context: machine paths, personal API key pointers, etc.
 
@@ -97,6 +115,7 @@ This template provides **no application code** — only the structure that gives
 │   │   ├── project-init.md      ← /project-init (fill docs from brief, create ADRs)
 │   │   ├── feature.md           ← /feature (plan → execute → document)
 │   │   ├── investigate.md       ← /investigate (read-only codebase exploration, ADR prep)
+│   │   ├── documentor.md        ← /documentor (adopt existing repo, generate docs/ memory)
 │   │   └── session-close.md     ← /session-close (write session journal)
 │   ├── skills/
 │   │   ├── writing-plans/       ← Atomic task plan generation
@@ -104,11 +123,12 @@ This template provides **no application code** — only the structure that gives
 │   │   ├── verification-before-completion/  ← Evidence-before-claims gate
 │   │   └── systematic-debugging/  ← Root cause before fix, 4-phase process
 │   └── agents/
-│       └── architecture-investigator.md  ← Wide codebase exploration without polluting main context
+│       ├── architecture-investigator.md  ← Wide codebase exploration without polluting main context
+│       └── documentor.md               ← Generates docs/ memory layer from any existing codebase
 └── docs/
-    ├── project.md               ← Vision, scope, users (filled by /project-init)
-    ├── architecture.md          ← Stack, infra, decisions (filled by /project-init, updated auto)
-    ├── decisions/               ← ADRs — created by /project-init and auto-created on tech choices
+    ├── project.md               ← Vision, scope, users (filled by /project-init or /documentor)
+    ├── architecture.md          ← Stack, infra, decisions (filled by /project-init or /documentor, updated auto)
+    ├── decisions/               ← ADRs — created by /project-init, /documentor, and auto-created on tech choices
     ├── specs/features/          ← Feature specs — auto-created after each /feature
     ├── superpowers/plans/       ← Implementation plans — auto-created by /feature
     ├── prompts/
@@ -137,6 +157,7 @@ Token cost is the real constraint of agentic development. Every session call is 
 | Phase | Tokens | Optimization lever |
 |---|---|---|
 | `/project-init` (one-time) | ~8–15K | Replaces N clarification exchanges with a single structured brief |
+| `/documentor` (one-time on existing repos) | ~10–20K | Reads codebase once, generates full memory — no back-and-forth |
 | Session start (CLAUDE.md + docs load) | ~2K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
 | `/feature` plan generation | ~5–10K | A precise brief → correct plan first try → no re-generation |
 | `/investigate` (on-demand) | ~3–8K | Isolated read-only pass — no context pollution, no wasted implementation tokens |
@@ -170,7 +191,8 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 
 | Command | What it does |
 |---|---|
-| `/project-init <brief>` | One-time init: fills all docs, creates ADRs, commits everything |
+| `/project-init <brief>` | One-time init on new repos: fills all docs, creates ADRs, commits everything |
+| `/documentor` | One-time adoption of existing repos: generates docs/ memory from codebase, 2 safety commits |
 | `/feature <brief>` | Full workflow: generate plan → human approval → subagent execution → docs update |
 | `/investigate <question>` | Read-only codebase exploration: answer + impacted files + risks + draft ADR |
 | `/session-close` | Write session summary to `docs/journal/session-notes.md` |
@@ -184,11 +206,12 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 | `verification-before-completion` | Before every commit claim | Must run and show verification command output before any success claim |
 | `systematic-debugging` | On any bug or test failure | 4-phase process: root cause → pattern → hypothesis → fix. No patches without root cause. |
 
-### Agents (invoke via `/investigate` or manually)
+### Agents (invoke via command or manually)
 
 | Agent | How to invoke | When to use |
 |---|---|---|
-| `architecture-investigator` | `/investigate <question>` | Wide codebase exploration to answer architecture questions, map dependencies, or prepare an ADR — without polluting the main session context |
+| `architecture-investigator` | `/investigate <question>` | Wide codebase exploration to answer architecture questions or prepare an ADR — without polluting main context |
+| `documentor` | `/documentor` | Adopt an existing repo: generate or enrich the full docs/ memory layer from any codebase |
 
 ### Prompts (`docs/prompts/`)
 
@@ -202,4 +225,5 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 ## Setup
 
 1. Go to your fork → **Settings → General → Template repository** ✓
-2. For each new project: clone → `/project-init [brief]` → `/feature` → `/session-close` → repeat
+2. **New project:** clone → `/project-init [brief]` → `/feature` → `/session-close` → repeat
+3. **Existing project:** copy `.claude/` + `CLAUDE.md` into your repo → `/documentor` → `/feature` → `/session-close` → repeat
