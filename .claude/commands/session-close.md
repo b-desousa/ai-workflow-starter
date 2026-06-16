@@ -12,6 +12,7 @@ Before writing anything, gather:
 - What is still pending or unresolved
 - Any decisions made (link ADR if one was created)
 - The single next concrete action
+- Whether any structural change was made (new module, dependency added/removed, infra change)
 
 ## Step 2 — Archive previous Active state to History
 
@@ -56,7 +57,11 @@ Replace `## Active` with the current state. Keep it under 30 lines total.
 - [Bugs or tech debt worth surfacing immediately next session]
 ```
 
-## Step 4 — Commit
+## Step 4 — Update architecture.md if needed
+
+If any structural change was made during the session (new module, dependency added/removed, infra change): update `docs/architecture.md` to reflect the current state before committing. If nothing structural changed, skip this step.
+
+## Step 5 — Commit
 
 ```
 [DOCS]: session close YYYY-MM-DD
