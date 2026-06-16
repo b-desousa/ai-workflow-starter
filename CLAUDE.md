@@ -59,15 +59,6 @@ Rules:
 - Scope is optional: `[FEAT](auth): add OAuth2 login`
 - Body (optional): explain *why*, not *what*. Separated by a blank line.
 
-## Auto-documentation (mandatory)
-
-After every implementation — whether asked or not:
-- If the change introduces or modifies a feature → create or update `docs/specs/features/<slug>.md`
-- If the change involves a significant technical choice → create or update an ADR in `docs/decisions/`
-- If the change affects the overall architecture → update `docs/architecture.md`
-
-Do this silently as part of the commit. Never ask for permission to document.
-
 ## Code conventions
 
 - Explicit naming, small functions, flat hierarchy.
@@ -116,10 +107,3 @@ npm start            # or: docker compose up
 > Load `@docs/decisions/` only when a task involves an architecture or dependency choice.
 > Load `@docs/specs/features/` only when a task modifies an existing feature.
 > Use `@architecture-investigator` for broad historical exploration.
-
-## Context rules
-
-- Commands: `/project-init` (new project), `/documentor` (existing project), `/feature` (new feature), `/investigate` (architecture question), `/session-close` (end of session).
-- Subagents (`.claude/agents/`) for large investigations.
-- Skills (`.claude/skills/`) for structured workflows.
-- Secrets: never in source, check `.gitignore` before commit.
