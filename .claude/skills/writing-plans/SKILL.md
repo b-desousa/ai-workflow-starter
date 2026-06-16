@@ -15,6 +15,34 @@ Assume they are a skilled developer, but know almost nothing about our toolset o
 
 **Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
 
+## Context Loading (token budget — follow strictly)
+
+Before writing the plan, load **only what the feature directly needs**:
+
+| Always load | Load only if impacted | Never load proactively |
+|---|---|---|
+| `@docs/project.md` | `@docs/architecture.md` (architecture change) | All ADRs at once |
+| `@CLAUDE.md` | Specific ADR file (dependency/infra decision) | Entire `docs/decisions/` |
+| `@docs/journal/session-notes.md` (Active section only) | `@DESIGN.md` (UI work only) | Full codebase tree (`find .`, `ls -R`) |
+| Files the feature will modify | | |
+
+`session-notes.md` is intentional short-term memory — always load it. Read only the **Active** section, not the full history.
+
+Do **not** `find .` or `ls -R` the full codebase. Read only the files the feature will touch.
+If unsure which files are impacted, read `@docs/architecture.md` first, then target specific files.
+
+## Plan Budget
+
+Keep plans proportional to feature complexity:
+
+| Feature size | Tasks | Max plan length | Code in plan? |
+|---|---|---|---|
+| Simple (1-3 files) | 2-4 | ~150 lines | Signatures only |
+| Standard (4-8 files) | 4-7 | ~400 lines | Key logic only |
+| Complex (architecture change) | 7-12 | ~700 lines | Full code where ambiguous |
+
+**Code inline in plans:** only write full code blocks when the implementation is non-obvious or error-prone (e.g. crypto, regex, complex SQL). For CRUD, form handlers, and standard patterns — signatures and types are enough.
+
 ## Scope Check
 
 If the spec covers multiple independent subsystems, suggest breaking into separate plans — one per subsystem. Each plan should produce working, testable software on its own.
@@ -93,7 +121,7 @@ Every step must contain the actual content. Never write:
 - "TBD", "TODO", "implement later"
 - "Add appropriate error handling"
 - "Similar to Task N" (repeat the code)
-- Steps without showing the actual code
+- Steps without showing the actual code (exception: standard CRUD patterns — signatures suffice)
 
 ## Self-Review
 
@@ -101,6 +129,7 @@ After writing the plan:
 1. **Spec coverage:** Can you point to a task for each requirement?
 2. **Placeholder scan:** Any red-flag phrases above?
 3. **Type consistency:** Do method signatures match across all tasks?
+4. **Budget check:** Is the plan within the line budget for this feature size?
 
 ## Execution Handoff
 
