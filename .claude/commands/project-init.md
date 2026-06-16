@@ -4,6 +4,9 @@ description: One-time project initialization from a project brief. Fills all doc
 
 # /project-init
 
+> **New projects only.** This command expects a human-written brief and an empty (or code-free) repository.
+> For existing codebases with code already written, use `/documentor` instead.
+
 You are initializing a new project from a brief provided by the human. The brief was written outside Claude Code. Your job is to translate it into structured project memory — no code, no implementation.
 
 ## Step 1 — Fill core docs
@@ -18,8 +21,9 @@ Be concise. These files will be loaded at every session start — keep them unde
 ## Step 2 — Create ADRs
 
 For each significant technical decision in the brief:
-- Create `docs/decisions/YYYY-MM-DD-<decision-slug>.md` using the template in `docs/decisions/`
+- Create `docs/decisions/ADR-NNN-<decision-slug>.md` using the template in `docs/decisions/`
 - Status: `Accepted` for decided choices, `Proposed` for open questions
+- Number sequentially starting from `ADR-001`
 
 Minimum: one ADR per major dependency or architectural pattern chosen.
 
