@@ -119,7 +119,7 @@ npm start            # or: docker compose up
 
 ## Context rules
 
+- Commands: `/project-init` (new project), `/documentor` (existing project), `/feature` (new feature), `/investigate` (architecture question), `/session-close` (end of session).
 - Subagents (`.claude/agents/`) for large investigations.
 - Skills (`.claude/skills/`) for structured workflows.
-- End of session: `/session-close`.
 - Secrets: never in source, check `.gitignore` before commit.
