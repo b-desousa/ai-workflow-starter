@@ -1,6 +1,6 @@
 ---
-allowed-tools: Read, Write
-description: End-of-session wrap-up — updates session-notes.md Active section and archives to History.
+allowed-tools: Read, Write, Bash
+description: End-of-session wrap-up — updates session-notes.md Active section, archives to History, and poses a workflow git tag for /health tracking.
 ---
 
 Close out the current working session by updating `docs/journal/session-notes.md`.
@@ -61,10 +61,13 @@ Replace `## Active` with the current state. Keep it under 30 lines total.
 
 If any structural change was made during the session (new module, dependency added/removed, infra change): update `docs/architecture.md` to reflect the current state before committing. If nothing structural changed, skip this step.
 
-## Step 5 — Commit
+## Step 5 — Commit and tag
 
-```
-[DOCS]: session close YYYY-MM-DD
+```bash
+git add docs/
+git commit -m "[DOCS]: session close $(date +%Y-%m-%d)"
+git tag workflow/session-close-$(date +%Y-%m-%d-%H%M)
 ```
 
-Do not ask for confirmation. Write and commit silently.
+The tag is used by `/health` to detect the last known-good docs state. Do not skip it.
+Do not ask for confirmation. Write, commit, and tag silently.

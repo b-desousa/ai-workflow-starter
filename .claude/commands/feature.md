@@ -58,7 +58,7 @@ Once approved, use the `subagent-driven-development` skill:
 - Mark each task done in TodoWrite
 - After all tasks: dispatch final reviewer
 
-**Do not pause between tasks. Do not ask “should I continue?”. Execute the full plan.**
+**Do not pause between tasks. Do not ask "should I continue?". Execute the full plan.**
 
 ## Step 4 — Wrap up
 
@@ -73,7 +73,15 @@ Once approved, use the `subagent-driven-development` skill:
 
 4. **If the feature introduced an architecture decision** (new dependency, new pattern, structural change): create `docs/decisions/ADR-NNN-<slug>.md` with status `Accepted`. Use the standard ADR template (Context / Decision / Consequences). Do not skip this step — implicit decisions are the most dangerous ones.
 
-Final commit: `[DOCS]: update session notes, feature spec and ADRs`
+5. Commit and tag:
+
+```bash
+git add docs/
+git commit -m "[DOCS]: update session notes, feature spec and ADRs"
+git tag workflow/feature-<feature-slug>-$(date +%Y-%m-%d-%H%M)
+```
+
+The tag is used by `/health` to detect the last known-good docs state.
 
 ## On bugs encountered during execution
 
