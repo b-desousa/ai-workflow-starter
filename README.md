@@ -50,10 +50,10 @@ For each feature, fill `docs/prompts/feature-brief-template.md` (outside Claude 
 
 Claude will:
 1. Read `docs/project.md`, `docs/architecture.md`, `docs/journal/session-notes.md`
-2. Write a full implementation plan → `docs/superpowers/plans/YYYY-MM-DD-<feature>.md`
-3. Present a task summary and wait for your approval ← **your only checkpoint**
-4. Execute automatically: one subagent per task → spec review → code quality review → commit
-5. Update `docs/`, create ADRs if needed, update `session-notes.md`
+2. Write a full implementation plan, present a task summary and wait for your approval ← **your only checkpoint**
+3. Execute automatically: one subagent per task → spec review → code quality review → commit
+4. Update `docs/`, create ADRs if needed, update `session-notes.md`
+5. Tag the commit as `workflow/feature-*` for `/health` tracking
 
 ### 4. Investigate architecture questions with /investigate
 
@@ -83,8 +83,8 @@ Claude will:
 2. Read the latest template structure from GitHub at runtime
 3. Explore the full codebase: source files, configs, git history, existing docs
 4. Generate or enrich `docs/project.md`, `docs/architecture.md`, ADRs, `session-notes.md`
-5. Commit the new memory layer
-6. Print a summary of what was created and what needs human input (`[TO FILL]` items)
+5. Wire a `## Documentation map` into `CLAUDE.md` so future sessions load context automatically
+6. Commit the new memory layer
 
 > **No code is ever modified.** If `docs/` already exists, the agent enriches it without overwriting correct content.
 
@@ -95,9 +95,28 @@ Claude will:
 ```
 
 Claude writes to `docs/journal/session-notes.md`: done, open, decisions, next action.
+Tags the commit as `workflow/session-close-*` for `/health` tracking.
 Next session, Claude reads it and resumes with full context — no re-briefing needed.
 
-### 7. Personal overrides (optional)
+### 7. Check docs freshness with /health
+
+If you skipped a few `/session-close` or `/feature` runs, or just want to know if docs are behind:
+
+```
+/health
+```
+
+Claude runs git-only diagnostics (~1–2K tokens): finds the last `workflow/*` tag, counts commits and changed files since, checks doc freshness. Prints a verdict — no files written.
+
+If drift is detected:
+
+```
+/health-fix
+```
+
+Reads only the files that changed since the last workflow tag and updates the three core doc files. Much lighter than `/documentor` (~5–15K tokens).
+
+### 8. Personal overrides (optional)
 
 Create `CLAUDE.local.md` at root (already in `.gitignore`) for local-only context: machine paths, personal API key pointers, etc.
 
@@ -113,24 +132,24 @@ This template provides **no application code** — only the structure that gives
 │   ├── settings.json            ← Default model (sonnet) + tool permissions (allow/deny)
 │   ├── commands/
 │   │   ├── project-init.md      ← /project-init (fill docs from brief, create ADRs)
-│   │   ├── feature.md           ← /feature (plan → execute → document)
+│   │   ├── feature.md           ← /feature (plan → execute → document → tag)
 │   │   ├── investigate.md       ← /investigate (read-only codebase exploration, ADR prep)
 │   │   ├── documentor.md        ← /documentor (adopt existing repo, generate docs/ memory)
-│   │   └── session-close.md     ← /session-close (write session journal)
+│   │   ├── session-close.md     ← /session-close (write session journal + workflow tag)
+│   │   ├── health.md            ← /health (git-only docs freshness check, ~1–2K tokens)
+│   │   └── health-fix.md        ← /health-fix (targeted docs repair after /health drift)
 │   ├── skills/
 │   │   ├── writing-plans/       ← Atomic task plan generation
 │   │   ├── subagent-driven-development/  ← Isolated subagent per task + model selection + 2-stage review
 │   │   ├── verification-before-completion/  ← Evidence-before-claims gate
 │   │   └── systematic-debugging/  ← Root cause before fix, 4-phase process
 │   └── agents/
-│       ├── architecture-investigator.md  ← Wide codebase exploration without polluting main context
-│       └── documentor.md               ← Generates docs/ memory layer from any existing codebase
+│       └── architecture-investigator.md  ← Wide codebase exploration without polluting main context
 └── docs/
     ├── project.md               ← Vision, scope, users (filled by /project-init or /documentor)
     ├── architecture.md          ← Stack, infra, decisions (filled by /project-init or /documentor, updated auto)
     ├── decisions/               ← ADRs — created by /project-init, /documentor, and auto-created on tech choices
     ├── specs/features/          ← Feature specs — auto-created after each /feature
-    ├── superpowers/plans/       ← Implementation plans — auto-created by /feature
     ├── prompts/
     │   ├── project-brief-template.md  ← Fill externally → give to /project-init
     │   └── feature-brief-template.md  ← Fill externally → give to /feature
@@ -157,14 +176,13 @@ Token cost is the real constraint of agentic development. Every session call is 
 | Phase | Tokens | Optimization lever |
 |---|---|---|
 | `/project-init` (one-time) | ~8–15K | Replaces N clarification exchanges with a single structured brief |
-| `/documentor` (one-time on existing repos) | ~10–20K | Reads codebase once, generates full memory — no back-and-forth |
-| Session start (CLAUDE.md + docs load) | ~2K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
-| `/feature` plan generation | ~5–10K | A precise brief → correct plan first try → no re-generation |
-| `/investigate` (on-demand) | ~3–8K | Isolated read-only pass — no context pollution, no wasted implementation tokens |
-| Per task: implementation subagent | ~5–10K | Fresh context = no history baggage. `haiku` for mechanical tasks. |
-| Per task: spec + code quality review | ~6–10K | `sonnet` for both, `opus` only for final cross-cutting review |
+| `/documentor` (one-time on existing repos) | ~1–1.5M | Haiku for exploration (Steps 1–3), Sonnet for generation (Steps 4–7) |
+| Session start (CLAUDE.md + docs load) | ~5–8K | Keep CLAUDE.md short. Only `@`-reference docs you need. |
+| `/feature` plan + execution | ~60–90K (5-task feature) | Precise brief → correct plan first try → no re-generation |
+| `/investigate` (on-demand) | ~3–8K | Isolated read-only pass — no context pollution |
 | `/session-close` wrap-up | ~2K | Fixed, unavoidable |
-| **Total for a 5-task feature** | **~60–90K tokens** | |
+| `/health` | ~1–2K | Git-only — no file reads |
+| `/health-fix` | ~5–15K | Delta-only — reads only changed files since last workflow tag |
 
 ### The 3 main optimization rules
 
@@ -177,25 +195,21 @@ Claude asking clarifying questions mid-execution means the plan was incomplete. 
 **3. Subagents have fresh context — by design.**
 Each subagent gets only the plan + its task. It does not inherit the full session history. This keeps per-task cost flat even on long features, and prevents context window degradation on task 10+.
 
-### What grows your bill fast
-- Keeping Claude in conversation for exploration/discovery (use docs + external tools instead)
-- Large files in context (keep functions small, files focused)
-- Repeated failed tasks without a plan (no plan = no subagent = full-context re-runs)
-- Re-generating plans due to vague briefs
-
 ---
 
 ## Commands, skills & agents reference
 
 ### Commands (`/`)
 
-| Command | What it does |
-|---|---|
-| `/project-init <brief>` | One-time init on new repos: fills all docs, creates ADRs, commits everything |
-| `/documentor` | One-time adoption of existing repos: generates docs/ memory from codebase, 2 safety commits |
-| `/feature <brief>` | Full workflow: generate plan → human approval → subagent execution → docs update |
-| `/investigate <question>` | Read-only codebase exploration: answer + impacted files + risks + draft ADR |
-| `/session-close` | Write session summary to `docs/journal/session-notes.md` |
+| Command | Tokens | What it does |
+|---|---|---|
+| `/project-init <brief>` | ~8–15K | One-time init on new repos: fills all docs, creates ADRs, commits everything |
+| `/documentor` | ~1–1.5M | One-time adoption of existing repos: generates docs/ memory from codebase |
+| `/feature <brief>` | ~60–90K | Full workflow: plan → approval → subagent execution → docs update → workflow tag |
+| `/investigate <question>` | ~3–8K | Read-only codebase exploration: answer + impacted files + risks + draft ADR |
+| `/session-close` | ~2K | Write session summary to `docs/journal/session-notes.md` + workflow tag |
+| `/health` | ~1–2K | Git-only docs freshness check — finds drift since last workflow tag |
+| `/health-fix` | ~5–15K | Targeted docs repair — reads only changed files, updates core docs |
 
 ### Skills (auto-invoked by commands)
 
@@ -210,15 +224,7 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 
 | Agent | How to invoke | When to use |
 |---|---|---|
-| `architecture-investigator` | `/investigate <question>` | Wide codebase exploration to answer architecture questions or prepare an ADR — without polluting main context |
-| `documentor` | `/documentor` | Adopt an existing repo: generate or enrich the full docs/ memory layer from any codebase |
-
-### Prompts (`docs/prompts/`)
-
-| Template | When to use |
-|---|---|
-| `project-brief-template.md` | Fill externally after brainstorm → paste into `/project-init` |
-| `feature-brief-template.md` | Fill externally before each feature → paste into `/feature` |
+| `architecture-investigator` | `/investigate <question>` | Wide codebase exploration to answer architecture questions or prepare an ADR |
 
 ---
 
@@ -227,3 +233,4 @@ Each subagent gets only the plan + its task. It does not inherit the full sessio
 1. Go to your fork → **Settings → General → Template repository** ✓
 2. **New project:** clone → `/project-init [brief]` → `/feature` → `/session-close` → repeat
 3. **Existing project:** copy `.claude/` + `CLAUDE.md` into your repo → `/documentor` → `/feature` → `/session-close` → repeat
+4. **Drift check anytime:** `/health` → `/health-fix` if needed
