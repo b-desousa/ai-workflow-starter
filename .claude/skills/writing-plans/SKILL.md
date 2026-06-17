@@ -10,7 +10,8 @@ Write implementation plans that guide an agent to build the right thing — not 
 Assume the engineer is skilled but knows nothing about this codebase or domain. DRY. YAGNI. TDD. Frequent commits.
 
 **Announce at start:** "I'm using the writing-plans skill to create the implementation plan."
-**Save plans to:** `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md`
+
+**Save the plan to disk** at `docs/superpowers/plans/YYYY-MM-DD-<feature-name>.md` before presenting it. This is mandatory — the file must exist on disk, not just in context.
 
 ---
 
@@ -40,19 +41,14 @@ Load **only what the feature directly needs**:
 **Never write full implementation code.** Signatures + types + one-line logic description is enough.
 
 Exceptions — write exact code only for:
-- **Crypto / hashing / IV generation** — wrong call breaks security silently
+- **Crypto / hashing / IV generation** — one wrong call breaks security silently
 - **Complex regex or SQL** — correctness is non-obvious
 - **Third-party SDK non-obvious call sequence** — agent would likely get it wrong
 
 > Plans are loaded by every sub-agent. Full code doubles token cost with zero added value — the agent rewrites it from context anyway.
 
-**Signatures look like this:**
-```typescript
-// lib/prompt-builder.ts
-export type SectionKey = "hero" | "problem-solution" | "tech-stack" | "key-decisions" | "cta";
-export function buildSectionPrompt(key: SectionKey, docSet: DocSet, project: ProjectMeta, repromptCtx?: string): { system: string; prompt: string }
-// Switch on key → { system, prompt }. Inject relevant docSet fields. Throws for unknown key.
-```
+Signatures look like this (inline, no full block):
+`export function buildSectionPrompt(key: SectionKey, docSet: DocSet, project: ProjectMeta, repromptCtx?: string): { system: string; prompt: string }` — switch on key, inject docSet fields, throws for unknown key.
 
 ### TDD Scaffolding Rule
 
@@ -78,49 +74,49 @@ If the spec spans multiple independent subsystems, split into separate plans —
 
 ## Plan Document Structure
 
-```markdown
-# [Feature Name] Implementation Plan
+Every plan starts with this header:
 
-> **For agentic workers:** Use subagent-driven-development to implement this plan task-by-task.
+    # [Feature Name] Implementation Plan
 
-**Goal:** [One sentence]
-**Architecture:** [2-3 sentences — decisions made, not implementation details]
-**Tech Stack:** [Key technologies only]
-**Decisions locked:** [Do not re-open these]
+    > **For agentic workers:** Use subagent-driven-development to implement this plan task-by-task.
 
-## File Map
-| Action | Path | Responsibility |
-|---|---|---|
-| Create | `lib/foo.ts` | ... |
+    **Goal:** [One sentence]
+    **Architecture:** [2-3 sentences — decisions made, not implementation details]
+    **Tech Stack:** [Key technologies only]
+    **Decisions locked:** [Do not re-open these]
 
----
+    ## File Map
+    | Action | Path | Responsibility |
+    |---|---|---|
+    | Create | `lib/foo.ts` | ... |
 
-### Task N — [Component Name]
+Then one section per task:
 
-**Files:** Create `path/to/file.ts` / Modify `path/to/other.ts`
+    ### Task N — [Component Name]
 
-[2-3 sentences: what, key constraint, why]
+    **Files:** Create `path/to/file.ts` / Modify `path/to/other.ts`
 
-```typescript
-// Signatures + types only
-export function foo(bar: BarType): BazType // one-line logic description
-```
+    [2-3 sentences: what, key constraint, why]
 
-- [ ] Write failing test — `npm test -- path/to/test`
-- [ ] Implement
-- [ ] Typecheck — `npm run typecheck`
-- [ ] Commit — `git commit -m "[FEAT]: ..."`
-```
+    Key interface: `export function foo(bar: BarType): BazType` — one-line logic description.
+
+    - [ ] **Step 1:** Write failing test — `npm test -- path/to/test` — Expected: FAIL
+    - [ ] **Step 2:** Run test to confirm it fails
+    - [ ] **Step 3:** Implement (see interface above)
+    - [ ] **Step 4:** Run test to confirm it passes — Expected: PASS
+    - [ ] **Step 5:** Typecheck — `npm run typecheck`
+    - [ ] **Step 6:** Commit — `git commit -m "[FEAT]: ..."`
 
 ---
 
 ## Self-Review
 
+Before saving the file:
 1. **Spec coverage:** One task per requirement?
-2. **Code audit:** Any full implementation blocks? → Replace with signatures.
+2. **Code audit:** Any full implementation blocks? → Replace with inline signatures.
 3. **Test audit:** Any full test bodies? → Replace with it-names + edge cases.
 4. **Placeholder scan:** Any TBD / TODO / "similar to Task N"? → Remove.
-5. **Budget check:** Within line limit?
+5. **Budget check:** Within line limit for this feature size?
 
 ---
 
