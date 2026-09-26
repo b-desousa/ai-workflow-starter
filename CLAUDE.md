@@ -1,109 +1,17 @@
 # Project rules
 
-## Goal
-
-- Build production-ready code with simple, explicit architecture.
-- Prefer small, testable, reversible changes over large rewrites.
-- Always verify before shipping: lint, tests, typecheck.
-
-## Language
-
-- All code, comments, commit messages, and documentation must be written in **English**.
-- Exception: user-facing copy follows the product's target language.
-
-## Workflow
-
-- For changes touching more than 2 files: explore first, plan, then implement.
-- Before editing, identify impacted files and verification steps.
-- After implementation, run the smallest relevant test/lint command.
-
-## Model selection
-
-Default session model: `claude-sonnet-4-6` (set in `.claude/settings.json`).
-
-> **Keeping models up to date:** Claude Code requires an exact model identifier in `settings.json` — there is no `latest` alias. When Anthropic releases a new version, update the `"model"` field in `.claude/settings.json` manually. Check [https://docs.anthropic.com/en/docs/about-claude/models](https://docs.anthropic.com/en/docs/about-claude/models) for the current recommended model string. This is a 30-second update per project clone.
-
-For subagent Task() dispatches, always specify `model=` explicitly:
-
-| Task type | Model |
-|---|---|
-| Mechanical (doc update, rename, mock, format) | `haiku` |
-| Standard (feature impl, tests, clear bug fix) | `sonnet` |
-| Complex (architecture, security, systemic debug) | `opus` |
-
-Never let a task run on Opus when Sonnet suffices. See `.claude/skills/subagent-driven-development/SKILL.md` for the full reviewer model rules.
-
-## Commit conventions
-
-Use the following prefix format for all commits:
-
-```
-[TYPE]: short description
-```
-
-Allowed types:
-- `[FEAT]` – new feature or capability
-- `[FIX]` – bug fix
-- `[REFACTOR]` – code change that neither fixes a bug nor adds a feature
-- `[DOCS]` – documentation only changes
-- `[TEST]` – adding or updating tests
-- `[CHORE]` – build process, tooling, dependencies
-- `[PERF]` – performance improvements
-- `[STYLE]` – formatting, whitespace, missing semi-colons, no logic change
-- `[REVERT]` – reverts a previous commit
-
-Example: `[FEAT]: files processing`
-
-Rules:
-- Subject line: imperative mood, max 72 chars, no trailing period.
-- Scope is optional: `[FEAT](auth): add OAuth2 login`
-- Body (optional): explain *why*, not *what*. Separated by a blank line.
-
-## Code conventions
-
-- Explicit naming, small functions, flat hierarchy.
-- Follow existing patterns before new abstractions.
-- No new dependency without an ADR.
-- Secrets in env vars only, never in source.
+Project: _not described yet — ask the user for one sentence and replace this line._
 
 ## Commands
 
-> Fill in once the stack is known. Template below — replace with real commands.
+_Not known yet — add test, lint, typecheck and build commands here once they exist._
 
-```bash
-# Install dependencies
-npm install          # or: pip install -r requirements.txt / poetry install
+## Rules
 
-# Development server
-npm run dev          # or: python -m uvicorn app.main:app --reload
-
-# Run tests
-npm test             # or: pytest / cargo test
-
-# Lint & format
-npm run lint         # or: ruff check . / eslint .
-npm run format       # or: ruff format . / prettier --write .
-
-# Typecheck
-npm run typecheck    # or: pyright / tsc --noEmit
-
-# Build for production
-npm run build        # or: docker compose build
-
-# Start production
-npm start            # or: docker compose up
-```
-
-> Claude should run the smallest relevant command after each change.
-> Example: touched only a test file → run only `npm test`, not the full pipeline.
-
-## Documentation map
-
-- Project vision & scope → `@docs/project.md`
-- Architecture → `@docs/architecture.md`
-- Session memory → `@docs/journal/session-notes.md` (Active section only)
-
-> **ADRs and feature specs are not loaded by default.**
-> Load `@docs/decisions/` only when a task involves an architecture or dependency choice.
-> Load `@docs/specs/features/` only when a task modifies an existing feature.
-> Use `@architecture-investigator` for broad historical exploration.
+- All code, comments, commits and docs in English (user-facing copy follows the product's language).
+- Code never goes directly to the default branch (or the branch named here): use a `feat/…` or `fix/…` branch and a pull request with passing checks. Docs (`docs/**`, this file) may be committed straight to it.
+- Conventional Commits, with the spec reference when there is one: `feat(auth): lock account after 5 failures (SPEC-012)`.
+- Run the commands above before each commit that touches code. Never weaken a test to make it pass unless the spec changed.
+- If a spec, an ADR and the code disagree, stop and report it. Do not resolve it silently.
+- Specs and ADRs live in `docs/` and follow the `/spec` skill (formats and workflow).
+- If the session-start board lists drafts or proposed ADRs, mention them in one line in your first reply.
