@@ -1,4 +1,4 @@
-# ai-workflow-starter
+# ai-starter-workflow
 
 A lean, spec-driven workflow for building software with Claude: plan anywhere (web, mobile), execute in Claude Code, keep every decision traceable in the repo.
 
