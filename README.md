@@ -13,7 +13,7 @@ A lean, spec-driven workflow for building software with Claude: plan anywhere (w
 ## The loop
 
 1. **Plan (chat, web or mobile).** `/spec new` explores an idea, then writes a `draft` spec in `docs/specs/`. `/spec review` resolves its open questions. You approve: the spec becomes `ready`.
-2. **Execute (Claude Code).** `/spec run` (or `/spec run all`) picks `ready` specs: branch, tests, code, pull request.
+2. **Execute (Claude Code).** `/spec run NNN` implements one `ready` spec test-first (acceptance tests written and failing before any code), then opens one pull request. `/spec run all` does every `ready` spec in a single pull request.
 3. **Close the loop (chat).** `/spec review` on anything the run sent back: specs returned to `draft`, ADRs `proposed`. You review and merge the PRs.
 
 | Spec status | Meaning |

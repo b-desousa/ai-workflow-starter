@@ -10,6 +10,7 @@ _Not known yet — add test, lint, typecheck and build commands here once they e
 
 - All code, comments, commits and docs in English (user-facing copy follows the product's language).
 - Code never goes directly to the default branch (or the branch named here): use a `feat/…` or `fix/…` branch and a pull request with passing checks. Docs (`docs/**`, this file) may be committed straight to it.
+- Trivial change (typo, small obvious bug): no spec, just a `fix/…` branch and a pull request.
 - Conventional Commits, with the spec reference when there is one: `feat(auth): lock account after 5 failures (SPEC-012)`.
 - Run the commands above before each commit that touches code. Never weaken a test to make it pass unless the spec changed.
 - If a spec, an ADR and the code disagree, stop and report it. Do not resolve it silently.
